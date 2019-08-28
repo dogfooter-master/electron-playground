@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package pb;
+
+service Pikabu {
+    rpc SendImage (SendImageRequest) returns (SendImageReply);
+}
+message SendImageRequest {
+    int32 len = 1;
+    bytes image = 2;
+}
+
+message SendImageReply {
+    int32 len = 1;
+}

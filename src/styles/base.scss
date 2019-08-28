@@ -1,0 +1,107 @@
+
+
+
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+// @import url('/fonts/NotoSansKR.css');
+
+
+* {
+    box-sizing: border-box;
+
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    height: 100%;
+}
+body, th, td, input, select, textarea, button, div {
+    font-family: 'Roboto';
+    font-weight: 400;
+    // margin: 0 auto;
+}
+
+#root {
+
+    height: 100%;
+}
+h1 {
+    margin: 0;
+}
+
+input {
+    border: none;
+    outline: none;
+}
+.button {
+    cursor: pointer;
+    user-select: none;
+}
+
+.nodisp {
+    visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.hidden {
+    visibility: hidden;
+}
+table .nodisp {
+    display: none;
+} 
+
+.date-decorator {
+    position: absolute;
+    top: 1px;
+    right: -6px;
+    width: 5px;
+    height: 5px;
+    border-radius: 5px;
+    background-color: #00a5bd;
+}
+
+
+.close-button {
+    width: 50px;
+    height: 50px;
+    background-image: url(/icon/close-n.png);
+
+    &:after {
+        display: none;
+        content: url(/icon/close-o.png) url(/icon/close-s.png);
+    }
+
+    &:hover {
+        background-image: url(/icon/close-o.png);
+    }
+
+    &:active {
+        background-image: url(/icon/close-s.png);
+    }
+
+}
+
+.delete-button {
+    width: 61px;
+    height: 43px;
+    background-image: url(/icon/sub-btn-delete-n.png);
+
+    &:after {
+        display: none;
+        content: url(/icon/sub-btn-delete-o.png) url(/icon/sub-btn-delete-s.png);
+    }
+
+    &:hover {
+        background-image: url(/icon/sub-btn-delete-o.png);
+    }
+
+    &:active {
+        background-image: url(/icon/sub-btn-delete-s.png);
+    }
+
+}

@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package pb;
+
+//The Signaling service definition.
+service Signaling {
+    rpc Register (RegisterRequest) returns (RegisterReply);
+    rpc WebRTCStartPlease (WebRTCStartPleaseRequest) returns (WebRTCStartPleaseReply);
+    rpc WebRTCAnswer (WebRTCAnswerRequest) returns (WebRTCAnswerReply);
+}
+
+message RegisterRequest {
+    string account = 1;
+    string type = 2;
+    string ip = 3;
+}
+
+message RegisterReply {
+    string account = 1;
+    string client_id = 2;
+}
+
+message WebRTCStartPleaseRequest {
+    string account = 1;
+    string client_id = 2;
+}
+
+message WebRTCStartPleaseReply {
+    string client_id = 1;
+    string offer = 2;
+    string conn_id = 3;
+}
+
+message WebRTCAnswerRequest {
+    string account = 1;
+    string client_id = 2;
+    string answer = 3;
+    string conn_id = 10;
+}
+
+message WebRTCAnswerReply {
+    string account = 1;
+    string client_id = 2;
+}
+
