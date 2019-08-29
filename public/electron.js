@@ -13,11 +13,15 @@ function createWindow() {
         height: 600,
         webPreferences: {
             nodeIntegration: true
-        }
-        // resizable: false,
+        },
+        resizable: false,
+        // frame: false,
+        title: "Pikabu",
+        transparent: true
     });
     mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`, {"extraHeaders" : "pragma: no-cache\n"});
-
+    mainWindow.setMenuBarVisibility(false);
+    // mainWindow.setIgnoreMouseEvents(true);
     if (isDev) {
         // Open the DevTools.
         //BrowserWindow.addDevToolsExtension('<location to your react chrome extension>');

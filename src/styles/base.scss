@@ -2,7 +2,11 @@
 
 
 @import url('https://fonts.googleapis.com/css?family=Roboto');
-// @import url('/fonts/NotoSansKR.css');
+//@import url('/fonts/LexiSaebomR_Regular.typeface.json');
+@font-face {
+    font-family: 'LexiSaebom';
+    src: url('/fonts/LexiSaebomR.ttf');
+}
 
 
 * {
@@ -19,7 +23,7 @@ body {
     height: 100%;
 }
 body, th, td, input, select, textarea, button, div {
-    font-family: 'Roboto';
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
     font-weight: 400;
     // margin: 0 auto;
 }

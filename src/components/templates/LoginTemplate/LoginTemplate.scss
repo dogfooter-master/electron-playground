@@ -1,27 +1,32 @@
 @import '../../../styles/common.scss';
+@import '../../../styles/base.scss';
 
 .login-template {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100%;
-    background-color: #00314e;
+    //background-color: #00314e;
 
     .login-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
         position: relative;
         // width: $home-width;
         //width: 1472px;
-        //height: $home-height;
+        //height: 920px;
         //min-width: 1472px;
         //min-height: $home-height;
-        box-shadow: 0 0 8px 8px #00314e inset;
+        //box-shadow: 0 0 8px 8px #00314e inset;
     
         // max-height: 100vh;
         // min-width: $home-width;
         // max-width: $home-max-width;
         // min-height: $home-height;
-        background-color: #00314e;
+        //background-color: #00314e;
         //background-image: url(/icon/login.png);
+        //background-image: url(/images/login.png);
         background-position: center;
         background-repeat: no-repeat;
     
@@ -30,11 +35,90 @@
     
         // width: calc(100vw - 0px);
         // height: calc(100vh - 0px);
-    
-        display: flex;
+
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
+
+        .logo {
+            position: fixed;
+            top: -256px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            width: 128px;
+            height: 128px;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: url(/images/flowork_logo.png);
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+        .company-name {
+             position: fixed;
+             top: -86px;
+             bottom: 0;
+             left: 0;
+             right: 0;
+             margin: auto;
+             width: 128px;
+             height: 128px;
+
+             display: flex;
+             justify-content: center;
+             align-items: center;
+             background-size: contain;
+             background-repeat: no-repeat;
+             padding: 5px 10px;
+             font-size: 24px;
+             color: #E372DC;
+             text-shadow: 1px 1px 2px pink;
+         }
+        .input-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            //display: inline-block;
+            //vertical-align: middle;
+            position: fixed;
+            top: 0;
+            bottom: -300px;
+            left: 0;
+            right: 0;
+            margin: auto;
+            width: 128px;
+            height: 128px;
+
+            form {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            .init-button-padding {
+                padding: 16px;
+            }
+            .signin-input {
+                width: 320px;
+            }
+            .button-padding {
+                margin: 6px;
+            }
+            .signin-button {
+                font-family: 'LexiSaebom', sans-serif;
+                width: 320px;
+            }
+            .back-button {
+              margin-bottom: -48px;
+            }
+          .loading {
+            margin-top: -43px;
+          }
+        }
     }
 
 
@@ -60,66 +144,4 @@
     //     }
         
     // }
-
-    .input-area {
-        position: fixed;
-        top:0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        margin: auto;
-        width: 100px;
-        height: 100px;
-
-        .create-account-button {
-        }
-        form {
-            width: 550px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-
-            input {
-                // float: right;
-                width: 290px;
-                height: 45px;
-                font-size: 18px;
-                border: none;
-                background-color: #fff;
-                // border-bottom: 1px solid gray;
-                padding-left: 10px;
-                outline: none;
-                margin-bottom: 10px;
-                border-radius: 5px;
-                color: #324b60;
-                
-            
-           }
-            input[type='submit'] {
-                width: 290px;
-                height: 45px;
-                font-size: 18px;
-                line-height: 45px;
-                // margin-top: 20px;
-            }
-
-            table {
-                // margin-bottom: 64px;
-                display: block;
-            }
-            th {
-                width: 100%;
-                text-align: left;
-                font-size: 16px;
-            }
-            td {
-                  width: 100%;
-                  text-align: right;
-                  font-size: 16px;
-              }
-        }
-        
-    }
-
 }

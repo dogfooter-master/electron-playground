@@ -6,6 +6,8 @@ class LoginTemplate extends Component {
         return (
             <div className='login-template'>
                 <div className='login-wrapper'>
+                    <div className='logo' />
+                    <div className='company-name'>FLOWORK</div>
                     <div className='input-area'>
                         {this.props.inputArea}
                     </div>

@@ -1,9 +1,14 @@
 import React, {Component, Fragment} from 'react';
+import CustomLoader from '../../components/common/CustomLoader';
 import LoginTemplate from '../../components/templates/LoginTemplate'
-import { makeStyles } from '@material-ui/core/styles';
+import { fade, withStyles, makeStyles, createMuiTheme } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import ReturnIcon from '@material-ui/icons/KeyboardBackspace';
+import TextField from '@material-ui/core/TextField';
 
 const { desktopCapturer } = window.require('electron');
+
 
 // const grpc = window.require('grpc');
 // const PROTO_PATH = 'public/protos/signaling.proto';
@@ -21,7 +26,7 @@ let configuration = {
 class LoginPage extends Component {
     constructor() {
         super();
-        this.connection = null;
+        this.remoteConnection = null;
         this.localConnection = null;
         this.connectedUser = 'electron';
         this.yourConnection = null;
@@ -40,6 +45,9 @@ class LoginPage extends Component {
         password: 'Hotice1234!',
         password_confirm: '',
         name: '',
+        isConnectedLocal: false,
+        isConnectedRemote: false,
+        isRequested: false,
     };
 
     componentWillMount() {
@@ -47,7 +55,7 @@ class LoginPage extends Component {
     }
 
     componentDidMount() {
-
+        /*
         const {onLogin, onOffer, onAnswer, onCandidate, onLeave, onConnected, onOfferDataChannel, onCandidateDataChannel } = this;
         this.connection = new WebSocket('ws://localhost:7070');
         this.connection.onopen = function () {
@@ -106,6 +114,7 @@ class LoginPage extends Component {
         this.localConnection.onerror = function (e) {
             console.log('Got error', e);
         };
+         */
     }
 
     send = (message) => {
@@ -407,7 +416,7 @@ class LoginPage extends Component {
                     account: this.state.email,
                     code: this.state.accessCode,
                 }
-                nextStatus = 'SignUpPassword';
+                // nextStatus = 'SignUpPassword';
                 break;
             case 'SignUpPassword':
                 send_data = {
@@ -494,13 +503,117 @@ class LoginPage extends Component {
 
     };
 
-    handleSignIn = (status) => {
-        this.setState({
-            loginStatus: status,
-        });
+    validateAccessToken = () => {
+        const access_info = JSON.parse(sessionStorage.getItem('access_info'));
+        let accessToken = '';
+        if (access_info) {
+            accessToken = access_info.access_token
+        }
+        let send_data = null;
+        send_data = {
+            category: 'private',
+            service: 'GetUserInformation',
+            access_token: accessToken,
+        };
+        console.log(send_data);
+        fetch('/api/', {
+            method: 'post',
+            headers: {'Content-type': 'application/json'},
+            body: JSON.stringify({
+                "data": send_data
+            })
+        }).then(
+            res => res.json()
+        ).then(
+        json => {
+            console.log('service OK', send_data.service, json);
+            if (json.err) {
+                console.log('err', json.err);
+                this.setState({
+                    loginStatus: 'Login',
+                })
+            } else {
+                // json.data.platform
+                this.setState({
+                    loginStatus: 'LoginCompleted',
+                })
+            }
+        }).catch(
+            err => console.log(err)
+        );
+    };
 
-        if (status === 'connected')
-            this.props.login();
+    handleFormEvent = (e, status) => {
+        e.preventDefault();
+        const {loginStatus} = this.state;
+        // this.setState({
+        //     loginStatus: status,
+        // });
+
+        const nextStatus = status;
+        let send_data = null;
+
+        if ( loginStatus === 'SignUp' ) {
+            send_data = {
+                category: 'public',
+                service: 'SignUp',
+                account: this.state.email,
+            };
+        } else if ( loginStatus === 'SignUpPassword' ) {
+            send_data = {
+                category: 'public',
+                service: 'SignUp',
+                account: this.state.email,
+            };
+        } else {
+
+        }
+
+        this.setState({
+            isRequested: true,
+        });
+        fetch('/api/', {
+            method: 'post',
+            headers: {'Content-type': 'application/json'},
+            body: JSON.stringify({
+                "data": send_data
+            })
+        })
+            .then(res => res.json())
+            .then(json => {
+
+                console.log('service OK 1', send_data.service, json);
+                let start = new Date().getTime();
+                while (new Date().getTime() < start + 3000);
+                console.log('service OK 2', send_data.service, json);
+
+                this.setState({
+                    isRequested: false,
+                });
+                if (json.err) {
+                    if (json.err === 'verifying') {
+                        this.setState({
+                            loginStatus: 'VerifyCertificationCode'
+                        })
+                    }
+                } else {
+                    if (status === 'SignUpPassword') {
+                        sessionStorage.setItem('access_info', JSON.stringify(json.data));
+                    } else if (status === 'SignIn') {
+                        sessionStorage.setItem('access_info', JSON.stringify(json.data));
+                        this.props.login();
+                        return;
+                    }
+
+                    console.log('service OK 3', send_data.service, json);
+                    // json.data.platform
+                    this.setState({
+                        loginStatus: nextStatus
+                    })
+                }
+
+            })
+            .catch(err => console.log(err));
     };
 
     handleChange = (e) => {
@@ -525,78 +638,93 @@ class LoginPage extends Component {
         const canvasStyle = {
             display: 'block',
         };
-        const {loginStatus} = this.state;
-        const {handleCreateAccount, handleSignIn, handleChange, handleStream, handleError} = this;
+        const classes = makeStyles(theme => ({
+            container: {
+                display: 'flex',
+                flexWrap: 'wrap',
+            },
+            textField: {
+                marginLeft: theme.spacing(1),
+                marginRight: theme.spacing(1),
+            },
+            dense: {
+                marginTop: theme.spacing(2),
+            },
+            menu: {
+                width: 200,
+            },
+            button: {
+                margin: theme.spacing(1),
+                height: theme.spacing(1),
+            },
+            input: {
+                display: 'none',
+            },
+        }));
+        const { loginStatus, isConnectedLocal, isConnectedRemote } = this.state;
+        const {handleCreateAccount, handleFormEvent, handleChange, handleStream, handleError, validateAccessToken} = this;
         let inputArea = null;
+
         console.log('SWS', 'loginStatus', loginStatus);
-        switch (loginStatus) {
-            case 'create':
-                inputArea = <Fragment>
-                    <form onSubmit={(e) => handleCreateAccount(e, 'SignUp')}>
-                        <input name='email' value={this.state.email} onChange={handleChange} required
-                               placeholder='Email' autoComplete='off'/>
+            switch (loginStatus) {
+                case 'create':
+                    inputArea = <Fragment>
+                        <form onSubmit={(e) => handleCreateAccount(e, 'SignUp')}>
+                            <input name='email' value={this.state.email} onChange={handleChange} required
+                                   placeholder='Email' autoComplete='off'/>
+                            <input className='button' type='submit' value='NEXT'/>
+                        </form>
+                    </Fragment>;
+                    break;
+                case 'VerifyCertificationCode':
+                    inputArea = <Fragment>
+                        <form onSubmit={(e) => handleCreateAccount(e, 'VerifyCertificationCode')}>
+                            <input name='access_code' value='' onChange={handleChange} required
+                                   placeholder='Access Code' autoComplete='off'/>
+                            <input className='button' type='submit' value='NEXT'/>
+                        </form>
+                    </Fragment>;
+                    break;
+                case 'SignUpPassword':
+                    inputArea = <form onSubmit={(e) => handleCreateAccount(e, 'SignUpPassword')}>
+                        <input type='password' name='password' value={this.state.password} onChange={handleChange}
+                               required placeholder='Password' autoComplete='off'/>
+                        <input type='password' name='password_confirm' value={this.state.password_confirm}
+                               onChange={handleChange} required placeholder='Confirm Password' autoComplete='off'/>
                         <input className='button' type='submit' value='NEXT'/>
-                    </form>
-                </Fragment>;
-                break;
-            // case 'VerifyCertificationCode':
-            //     inputArea = <Fragment>
-            //         <form onSubmit={(e) => handleCreateAccount(e, 'VerifyCertificationCode')}>
-            //             <input name='access_code' value={systemInfo.accessCode} onChange={handleChange} required
-            //                    placeholder='Access Code' autoComplete='off'/>
-            //             <input className='button' type='submit' value='NEXT'/>
-            //         </form>
-            //     </Fragment>;
-            //     break;
-            case 'SignUpPassword':
-                inputArea = <form onSubmit={(e) => handleCreateAccount(e, 'SignUpPassword')}>
-                    <input type='password' name='password' value={this.state.password} onChange={handleChange}
-                           required placeholder='Password' autoComplete='off'/>
-                    <input type='password' name='password_confirm' value={this.state.password_confirm}
-                           onChange={handleChange} required placeholder='Confirm Password' autoComplete='off'/>
-                    <input className='button' type='submit' value='NEXT'/>
-                </form>;
-                break;
-            case 'SignUpComplete':
-                inputArea = <form onSubmit={(e) => handleCreateAccount(e, 'SignUpComplete')}>
-                    <input name='name' value={this.state.name} onChange={handleChange} required
-                           placeholder='Full Name' autoComplete='off'/>
-                    <input className='button' type='submit' value='CONFIRM'/>
-                </form>;
-                break;
-            case 'SignIn':
-                inputArea = <form onSubmit={(e) => handleCreateAccount(e, 'SignIn')}>
-                    <input name='email' value={this.state.email} onChange={handleChange} required
-                           placeholder='Email' autoComplete='off'/>
-                    <input type='password' name='password' value={this.state.password} onChange={handleChange}
-                           required placeholder='Password' autoComplete='off'/>
-                    <input className='button' type='submit' value='CONNECT'/>
-                </form>;
-                break;
-            case 'find':
+                    </form>;
+                    break;
+                case 'SignUpComplete':
+                    inputArea = <form onSubmit={(e) => handleCreateAccount(e, 'SignUpComplete')}>
+                        <input name='name' value={this.state.name} onChange={handleChange} required
+                               placeholder='Full Name' autoComplete='off'/>
+                        <input className='button' type='submit' value='CONFIRM'/>
+                    </form>;
+                    break;
+                case 'find':
 
-                // const title = 'MOMO-1';
-                // const lpszWindow = Buffer.from(title, 'ucs2');
-                // const hWnd = user32.FindWindowExW(null, null, null, lpszWindow);
-                //
-                // if ( hWnd && !hWnd.isNull() ) {
-                //     console.log(ref.address(hWnd));
-                // }
+                    // const title = 'MOMO-1';
+                    // const lpszWindow = Buffer.from(title, 'ucs2');
+                    // const hWnd = user32.FindWindowExW(null, null, null, lpszWindow);
+                    //
+                    // if ( hWnd && !hWnd.isNull() ) {
+                    //     console.log(ref.address(hWnd));
+                    // }
 
-                inputArea = <Fragment>
-                    <Button
-                        variant="contained"
-                        className='create-account-button'
-                        onClick={() => this.setState({loginStatus: 'find'})}>
-                        find
-                    </Button>
-                </Fragment>;
-                break;
-            case 'capture':
-                desktopCapturer.getSources({ types: ['window'] }).then(async sources => {
-                    for (const source of sources) {
-                        console.log(source);
-                        // if (source.name === 'MOMO-1') {
+                    inputArea = <Fragment>
+                        <Button
+                            variant="contained"
+                            className='create-account-button'
+                            onClick={() => this.setState({loginStatus: 'find'})}>
+                            find
+                        </Button>
+                    </Fragment>;
+                    break;
+                case 'capture':
+                    desktopCapturer.getSources({types: ['window']}).then(async sources => {
+                        for (const source of sources) {
+                            console.log(source);
+                            // if (source.name === 'MOMO-1') {
                             try {
                                 const stream = await navigator.mediaDevices.getUserMedia({
                                     audio: false,
@@ -613,85 +741,220 @@ class LoginPage extends Component {
                                 handleError(e)
                             }
                             return
-                        // }
+                            // }
+                        }
+                    });
+                    inputArea = <Fragment>
+                        <video/>
+                        <Button
+                            variant="contained"
+                            className='create-account-button'
+                            onClick={() => this.setState({loginStatus: 'Login'})}>
+                            Login
+                        </Button>
+                    </Fragment>;
+                    break;
+                case 'canvas':
+                    const canvas = document.querySelector('canvas');
+                    const stream = canvas.captureStream();
+                    handleStream(stream);
+                    // setInterval(function () {
+                    //     const imgNo = ( Math.floor(Math.random() * 10) % 2 + 1 );
+                    //     let context = canvas.getContext("2d");
+                    //     let img = new Image();
+                    //     img.onload = function () {
+                    //         context.drawImage(img, 0, 0);
+                    //     };
+                    //     img.src = "img/" + imgNo + ".png";
+                    // }, 60);
+                    inputArea = <Fragment>
+                        <video/>
+                        <canvas style={canvasStyle} id='temp_canvas'/>
+                        <Button
+                            variant="contained"
+                            className='create-account-button'
+                            onClick={() => this.setState({loginStatus: 'Login'})}>
+                            Login
+                        </Button>
+                    </Fragment>;
+                    break;
+                // case 'Login':
+                //     this.send({
+                //         type: 'login',
+                //         username: this.connectedUser,
+                //     });
+                //     inputArea = <Fragment>
+                //         <video/>
+                //         <canvas style={canvasStyle} id='temp_canvas'/>
+                //         <Button
+                //             variant="contained"
+                //             className='create-account-button'
+                //             onClick={() => this.setState({loginStatus: 'Connect'})}>
+                //             Connect
+                //         </Button>
+                //     </Fragment>;
+                //     break;
+                case 'Connect':
+                    this.startPeerConnection('admin');
+                    inputArea = <Fragment>
+                        <video/>
+                        <canvas style={canvasStyle} id='temp_canvas'/>
+                        <Button
+                            variant="contained"
+                            className='create-account-button'
+                            onClick={() => this.setState({loginStatus: 'Connect'})}>
+                            Connect
+                        </Button>
+                    </Fragment>;
+                    break;
+                case 'SignInPassword':
+                    inputArea = <Fragment>
+                        <form onSubmit={(e) => handleFormEvent(e, 'SignIn')}>
+                            <TextField
+                                key="outlined-password-input"
+                                id="outlined-password-input"
+                                className='signin-input'
+                                label="Password"
+                                type="password"
+                                name="password"
+                                autoComplete="current-password"
+                                margin="normal"
+                                variant="outlined"
+                                value={this.state.password}
+                                onChange={handleChange}
+                            />
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                className='signin-button'
+                                // className={classes.button}
+                                onClick={() => this.setState({loginStatus: 'Validate'})}>
+                                로그인
+                            </Button>
+                            <IconButton
+                                color="primary"
+                                className={'back-button'}
+                                aria-label="Back"
+                                onClick={() => this.setState({loginStatus: 'SignIn'})}>
+                                <ReturnIcon />
+                            </IconButton>
+                        </form>
+                    </Fragment>;
+
+                    // inputArea = <form onSubmit={(e) => handleCreateAccount(e, 'SignIn')}>
+                    //     <input name='email' value={this.state.email} onChange={handleChange} required
+                    //            placeholder='Email' autoComplete='off'/>
+                    //     <input type='password' name='password' value={this.state.password} onChange={handleChange}
+                    //            required placeholder='Password' autoComplete='off'/>
+                    //     <input className='button' type='submit' value='CONNECT'/>
+                    // </form>;
+                    break;
+                case 'SignIn':
+                    inputArea = <Fragment>
+                        <form onSubmit={(e) => handleFormEvent(e, 'SignInPassword')}>
+                            <TextField
+                                key="outlined-email-input"
+                                id="outlined-email-input"
+                                className='signin-input'
+                                label="Email"
+                                type="email"
+                                name="email"
+                                autoComplete="email"
+                                margin="normal"
+                                variant="outlined"
+                                value={this.state.email}
+                                onChange={handleChange}
+                            />
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                className='signin-button'
+                                // className={classes.button}
+                                onClick={() => this.setState({loginStatus: 'SignInPassword'})}>
+                                다음
+                            </Button>
+                            <IconButton
+                                color="primary"
+                                className={'back-button'}
+                                aria-label="Back"
+                                onClick={() => this.setState({loginStatus: 'Login'})}>
+                                <ReturnIcon />
+                            </IconButton>
+                        </form>
+                    </Fragment>;
+                    break;
+                case 'SignUp':
+                    inputArea = <Fragment>
+                        {this.state.isRequested ?
+                            <div className={'loading'}>
+                                <CustomLoader/>
+                            </div> : ''
+                        }
+                        <form onSubmit={(e) => handleFormEvent(e, 'SignUpPassword')}>
+                            <TextField
+                                key="outlined-email-input"
+                                id="outlined-email-input"
+                                className='signin-input'
+                                label="Email"
+                                type="email"
+                                name="email"
+                                autoComplete="email"
+                                margin="normal"
+                                variant="outlined"
+                                value={this.state.email}
+                                onChange={handleChange}
+                            />
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                className='signin-button'
+                                // className={classes.button}
+                                onClick={(e) => handleFormEvent(e, 'SignUpPassword')}>
+                                다음
+                            </Button>
+                            <IconButton
+                                color="primary"
+                                className={'back-button'}
+                                aria-label="Back"
+                                onClick={() => this.setState({loginStatus: 'Login'})}>
+                                <ReturnIcon />
+                            </IconButton>
+                        </form>
+                    </Fragment>;
+                    break;
+                case 'Login':
+                    // TODO: Access Token 검사
+                    inputArea = <Fragment>
+                        <div className='init-button-padding'/>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            className='signin-button'
+                            // className={classes.button}
+                            onClick={() => this.setState({loginStatus: 'SignIn'})}>
+                            로그인
+                        </Button>
+                        <div className="button-padding"/>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            className='signin-button'
+                            // className={classes.button}
+                            onClick={() => this.setState({loginStatus: 'SignUp'})}>
+                            회원가입
+                        </Button>
+                    </Fragment>;
+                    break;
+                default:
+                    if ( isConnectedRemote && isConnectedLocal ) {
+                        validateAccessToken()
                     }
-                });
-                inputArea = <Fragment>
-                    <video/>
-                    <Button
-                        variant="contained"
-                        className='create-account-button'
-                        onClick={() => this.setState({loginStatus: 'Login'})}>
-                        Login
-                    </Button>
-                </Fragment>;
-                break;
-            case 'canvas':
-                const canvas = document.querySelector('canvas');
-                const stream = canvas.captureStream();
-                handleStream(stream);
-                // setInterval(function () {
-                //     const imgNo = ( Math.floor(Math.random() * 10) % 2 + 1 );
-                //     let context = canvas.getContext("2d");
-                //     let img = new Image();
-                //     img.onload = function () {
-                //         context.drawImage(img, 0, 0);
-                //     };
-                //     img.src = "img/" + imgNo + ".png";
-                // }, 60);
-                inputArea = <Fragment>
-                    <video/>
-                    <canvas style={canvasStyle} id='temp_canvas'/>
-                    <Button
-                        variant="contained"
-                        className='create-account-button'
-                        onClick={() => this.setState({loginStatus: 'Login'})}>
-                        Login
-                    </Button>
-                </Fragment>;
-                break;
-            case 'Login':
-                this.send({
-                    type: 'login',
-                    username: this.connectedUser,
-                });
-                inputArea = <Fragment>
-                    <video/>
-                    <canvas style={canvasStyle} id='temp_canvas'/>
-                    <Button
-                        variant="contained"
-                        className='create-account-button'
-                        onClick={() => this.setState({loginStatus: 'Connect'})}>
-                        Connect
-                    </Button>
-                </Fragment>;
-                break;
-            case 'Connect':
-                this.startPeerConnection('admin');
-                inputArea = <Fragment>
-                    <video/>
-                    <canvas style={canvasStyle} id='temp_canvas'/>
-                    <Button
-                        variant="contained"
-                        className='create-account-button'
-                        onClick={() => this.setState({loginStatus: 'Connect'})}>
-                        Connect
-                    </Button>
-                </Fragment>;
-                break;
-            default:
-                inputArea = <Fragment>
-                    <video/>
-                    <canvas style={canvasStyle} id='temp_canvas'/>
-                    <Button
-                        variant="contained"
-                        className='create-account-button'
-                        onClick={() => this.setState({loginStatus: 'canvas'})}>
-                        canvas
-                    </Button>
-                </Fragment>;
-                break;
-        }
+                    inputArea = <Fragment>
+                        <CustomLoader/>
+                    </Fragment>;
+
+                    break;
+            }
         return <LoginTemplate inputArea={inputArea}>
         </LoginTemplate>
     }
