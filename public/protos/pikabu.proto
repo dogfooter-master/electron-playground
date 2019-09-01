@@ -2,14 +2,85 @@ syntax = "proto3";
 
 package pb;
 
-service Pikabu {
-    rpc SendImage (SendImageRequest) returns (SendImageReply);
-}
-message SendImageRequest {
-    int32 len = 1;
-    bytes image = 2;
+//The Peekaboo service definition.
+service Peekaboo {
+    rpc Pikabu (PikabuRequest) returns (PikabuReply);
+    rpc RefreshWindows (RefreshWindowsRequest) returns (RefreshWindowsReply);
+    rpc StartStreaming (StartStreamingRequest) returns (StartStreamingReply);
+    rpc EndStreaming (EndStreamingRequest) returns (EndStreamingReply);
+    rpc ChangeQuality (ChangeQualityRequest) returns (ChangeQualityReply);
+    rpc ChangeFps (ChangeFpsRequest) returns (ChangeFpsReply);
+    rpc ChangeProperties (ChangePropertiesRequest) returns (ChangePropertiesReply);
 }
 
-message SendImageReply {
-    int32 len = 1;
+message PikabuRequest {
+    string category = 1;
+    string keyword = 10;
 }
+
+message PikabuReply {
+    string category = 1;
+}
+
+message RefreshWindowsRequest {
+    string keyword = 1;
+}
+
+message RefreshWindowsReply {
+    message Window {
+        string title = 1;
+        int32 handle = 2;
+    }
+
+    repeated Window window_list = 1;
+}
+
+message StartStreamingRequest {
+    int32 handle = 1;
+    string label = 2;
+    int32 quality = 3;
+    int32 fps = 4;
+}
+
+message StartStreamingReply {
+    string label = 1;
+}
+
+message EndStreamingRequest {
+    int32 handle = 1;
+    string label = 2;
+}
+
+message EndStreamingReply {
+    int32 handle = 1;
+}
+
+message ChangeQualityRequest {
+    int32 quality = 1;
+    string label = 2;
+}
+
+message ChangeQualityReply {
+    int32 quality = 1;
+}
+
+message ChangeFpsRequest {
+    int32 fps = 1;
+    string label = 2;
+}
+
+message ChangeFpsReply {
+    int32 fps = 1;
+}
+
+message ChangePropertiesRequest {
+    int32 handle = 1;
+    string label = 2;
+    int32 quality = 3;
+    int32 fps = 4;
+}
+
+message ChangePropertiesReply {
+    string label = 1;
+}
+

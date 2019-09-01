@@ -1,0 +1,36 @@
+@import '../../../styles/common.scss';
+@import '../../../styles/base.scss';
+
+.search {
+    // border: 1px solid gray;
+    display: flex;
+    flex-direction: column;
+    // margin: 5px;
+
+    .search-input {
+        position: relative;
+        width: 100%;
+        height: 28px;
+        // padding-left: 10px;
+        // border-radius: 5px;
+        // border: solid 1px #f0f3f6;
+        // background-color: #f5f8fc;
+        display: flex;
+        align-items:center;
+
+
+        .input-item {
+            // background-color: #dde5ee;
+            min-width: 50px;
+            max-width: 172px;
+            height: 40px;
+            display: flex;          
+        }
+    
+        .search-icon {
+            position: absolute;
+            top: 3px;
+            right: -8px;
+        }
+    }
+}

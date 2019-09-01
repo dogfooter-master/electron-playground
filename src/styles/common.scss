@@ -1,12 +1,12 @@
-$home-width: 1920px;
-$home-max-width: 1920px;
+$home-width: 700px;
+$home-max-width: 700px;
 // $home-height: 1004px;
-$home-height: 920px;
-$home-max-height: 2000px;
+$home-height: 550px;
+$home-max-height: 550px;
 $header-height: 86px;
 $content-height: calc(#{$home-height} - #{$header-height});
 
-$left-wing-width: 400px;
-$right-wing-width: 384px;
+$left-wing-width: 240px;
+$right-wing-width: 0px;
 
 $main-blue: #00a5bd;

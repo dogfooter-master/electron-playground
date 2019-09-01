@@ -12,12 +12,15 @@ function createWindow() {
         width: 800,
         height: 600,
         webPreferences: {
-            nodeIntegration: true
+            nodeIntegration: true,
+            webPreferences: {
+                webSecurity: false
+            }
         },
-        resizable: false,
+        resizable: true,
         // frame: false,
         title: "Pikabu",
-        transparent: true
+        // transparent: true
     });
     mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`, {"extraHeaders" : "pragma: no-cache\n"});
     mainWindow.setMenuBarVisibility(false);

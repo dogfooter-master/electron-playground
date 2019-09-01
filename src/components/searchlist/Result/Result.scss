@@ -1,0 +1,267 @@
+.result {
+    // border: 1px solid gray;
+    // margin-top: 10px;
+    // position: relative;
+
+    .loader {
+        height: calc(100% - 34px);
+        position: absolute;
+        top: 34px;
+        left: 0;
+        background-color: rgba(255,255,255,0.7)
+    }
+    table {
+        // position: relative;
+        width: 100%;
+        padding-left: 5px;
+        font-size: 16px;
+        // border: none;
+        // border-collapse: collapse;
+
+        border-collapse: separate;
+        border-spacing: 0;
+
+        table-layout:fixed;
+        
+        thead {
+        
+            tr {
+                height: 34px;
+                width: 352px;
+
+                th{
+                    position: sticky;
+                    top: 0;
+                    background-color: #f5f8fc;
+                    color: rgba(70, 93, 116, 1);
+                    padding-left: 5px;
+                    text-align: left;
+                    font-size: 14px;
+                    
+                    .sort-icon {
+                        display: inline-block;
+                        position: absolute;
+                        width: 19px;
+                        height: 19px;
+                        background-image: url(/icon/sort_both.png);
+
+                    }
+                    .sort-icon:after {
+                        display: none;
+                        content: url(/icon/sort_asc.png) url(/icon/sort_desc.png);
+                    }
+
+                    &.sorting_asc {
+                        .sort-icon {
+                            background-image: url(/icon/sort_asc.png);
+                        }
+                    }
+
+                    &.sorting_desc {
+                        .sort-icon {
+                            background-image: url(/icon/sort_desc.png);
+                        }
+                    }
+                }
+            }
+            
+        }
+
+        tbody {
+            // position: relative;
+            tr {
+                
+                margin-left: 5px;
+                height: 62px;
+                line-height: 16px;
+                // border-bottom: 1px solid #dde6e9;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                td {
+                    padding-left: 5px;
+                    border-bottom: solid 2px #dde6e9;
+
+                    .date-decorator {
+                        top: 15px;
+                        right: 5px;
+                    }
+                }
+
+                td.date {
+                    position: relative;
+                }
+
+                td.ellipse {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+
+                    .after {
+                        display: none;
+                    }
+                }
+
+                .ellipse:hover, .ellipse:active {
+
+                    .after {
+                        overflow: visible; 
+                        text-overflow: inherit;
+                        background: #fff;
+                        position: absolute;
+                        left: auto;
+                        top: auto;
+                        width: auto;
+                        // height: 100%;
+                        // height: 40px;
+                        max-width: 20rem;
+                        border: 1px solid #eaebec;
+                        // padding: 0 .5rem;
+                        padding: 0 5px;
+                        box-shadow: 0 2px 4px 0 rgba(0,0,0,.28);
+                        white-space: normal;
+                        word-wrap: break-word;
+                        display:block;
+                        color:black;
+                        margin-top:-1.25rem;
+                    }
+
+                }
+
+                td:nth-child(2){
+                    border-left: solid 2px #ffffff00;
+
+                }
+
+                td:last-child {
+                    border-right: solid 2px #ffffff00;
+                    padding-right: 5px;
+                }
+
+                &:hover{
+                    td {
+                        // border-top: solid 2px #ff8585;
+                        // border-bottom: solid 2px #ff8585;
+                        background-color: rgba(0, 165, 189, 0.12);
+    
+                    }
+                    
+                    td:nth-child(2){
+                        // border-left: solid 2px #ffffff00;
+
+                        border-top-left-radius: 5px;
+                        border-bottom-left-radius: 5px;
+                   }
+                   td:last-child{
+                        border-right: solid 2px #ffffff00;
+                        border-top-right-radius: 5px;
+                        border-bottom-right-radius: 5px;
+                   }
+                }
+
+
+                &.selected {
+                    td {
+                        // border-top: solid 2px #ff8585;
+                        // border-bottom: solid 2px #ff8585;
+                        background-color: #fbefef;
+    
+                    }
+                    
+                    td:nth-child(2){
+                        // border-left: solid 2px #ffffff00;
+
+                        border-top-left-radius: 5px;
+                        border-bottom-left-radius: 5px;
+                   }
+                   td:last-child{
+                        border-right: solid 2px #ffffff00;
+                        border-top-right-radius: 5px;
+                        border-bottom-right-radius: 5px;
+                   }
+                }
+
+                // &.selected {
+                //     td {
+                //         // border-top: solid 2px #ff858500;
+                //         // border-bottom: solid 2px #ff858500;
+                //         background-color: #fbefef;
+    
+                //     }
+                    
+                //     td:nth-child(2){
+                //         // border-left: solid 2px #ff858500;
+
+                //         border-top-left-radius: 5px;
+                //         border-bottom-left-radius: 5px;
+                //    }
+                //    td:last-child{
+                //         border-right: solid 2px #ff858500;
+                //         border-top-right-radius: 5px;
+                //         border-bottom-right-radius: 5px;
+                //    }
+                // }
+
+                &.clicked {
+                    td {
+                        border-top: solid 2px #ff8585;
+                        border-bottom: solid 2px #ff8585;
+                        background-color: #fbefef;
+    
+                    }
+                    
+                    td:nth-child(2){
+                        border-left: solid 2px #ff8585;
+
+                        border-top-left-radius: 5px;
+                        border-bottom-left-radius: 5px;
+                   }
+                   td:last-child{
+                        border-right: solid 2px #ff8585;
+                        border-top-right-radius: 5px;
+                        border-bottom-right-radius: 5px;
+                   }
+                }
+
+            }
+        }
+    }
+
+    .result-patient {
+        th.id {
+            width: 74px;
+        }
+        th.name {
+            width: 84px;
+        }
+        th.birth.date {
+            width: 96px;
+        }
+
+        th.visit.date {
+            width: 94px;
+        }
+    }
+
+    .result-disease {
+        th.name {
+            width: 84px;
+        }
+        th.visit.date {
+            width: 104px;
+        }
+    }
+
+    .result-date {
+        th.name {
+            width: 84px;
+        }
+        th.type {
+            width: 89px;
+        }
+        th.visit.date {
+            width: 94px;
+        }
+        th.images {
+            width: 70px;
+        }
+    }
+}

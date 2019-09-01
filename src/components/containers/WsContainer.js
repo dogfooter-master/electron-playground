@@ -197,23 +197,20 @@ class WsContainer extends Component {
     // shouldComponentUpdate(nextProps, nextState) {
     //     return !!nextProps.sendMessage;
     // }
-    render() {
-        const {clientToken, sendMessage, reload, clearReloadState} = this.props;
-        const {remoteHost, localHost, onOpenRemote, onMessageRemote, onCloseRemote, onOpenLocal, onMessageLocal, onCloseLocal, reconnectIntervalInMilliSeconds} = this;
-        console.log('SWS1', 'WsContainer', clientToken, sendMessage);
+    shouldComponentUpdate = (nextProps, nextState) => {
+        const {clientToken, sendMessage, reload, clearReloadState} = nextProps;
+        console.log('DEBUG', 'reload', reload);
         if (reload) {
             if (this.refWebsocketRemote) {
                 console.log('SWS', 'this.refWebsocketRemote', this.refWebsocketRemote);
                 this.refWebsocketRemote.state.ws.close();
-                clearReloadState();
-                this.reconnectIntervalInMilliSeconds = 1;
             }
             if (this.refWebsocketLocal) {
                 console.log('SWS', 'this.refWebsocketLocal', this.refWebsocketLocal);
                 this.refWebsocketLocal.state.ws.close();
-                clearReloadState();
-                this.reconnectIntervalInMilliSeconds = 1;
             }
+            clearReloadState();
+            return true;
         } else {
             if (sendMessage) {
                 if (sendMessage.service) {
@@ -226,8 +223,41 @@ class WsContainer extends Component {
                     }));
                 }
             }
-        }
-        console.log('SWS', 'WebsocketContainer');
+            return false;
+        }        
+    };
+
+    render() {
+        const {clientToken, sendMessage} = this.props;
+        const {remoteHost, localHost, onOpenRemote, onMessageRemote, onCloseRemote, onOpenLocal, onMessageLocal, onCloseLocal, reconnectIntervalInMilliSeconds} = this;
+        console.log('SWS1', 'WsContainer', clientToken, sendMessage);
+        // if (reload) {
+        //     if (this.refWebsocketRemote) {
+        //         console.log('SWS', 'this.refWebsocketRemote', this.refWebsocketRemote);
+        //         this.refWebsocketRemote.state.ws.close();
+        //         clearReloadState();
+        //         this.reconnectIntervalInMilliSeconds = 1;
+        //     }
+        //     if (this.refWebsocketLocal) {
+        //         console.log('SWS', 'this.refWebsocketLocal', this.refWebsocketLocal);
+        //         this.refWebsocketLocal.state.ws.close();
+        //         clearReloadState();
+        //         this.reconnectIntervalInMilliSeconds = 1;
+        //     }
+        // } else {
+        //     if (sendMessage) {
+        //         if (sendMessage.service) {
+        //             this.sendRemote(JSON.stringify({
+        //                 data: sendMessage,
+        //             }));
+        //         } else {
+        //             this.sendLocal(JSON.stringify({
+        //                 data: sendMessage,
+        //             }));
+        //         }
+        //     }
+        // }
+        console.log('SWS', 'WebsocketContainer', remoteHost, localHost);
         return <Fragment>
             <Websocket url={remoteHost}
                        onOpen={onOpenRemote}

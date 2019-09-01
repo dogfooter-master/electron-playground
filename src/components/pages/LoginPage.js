@@ -38,16 +38,20 @@ class LoginPage extends Component {
         this.buffer = '';
         this.windowImage = null;
         this.windowImageUrl = null;
+        this.newPassword = '';
     }
     state = {
         loginStatus: '',
         email: 'lazysupport@dermaster.io',
         password: 'Hotice1234!',
         password_confirm: '',
+        verification_code:'',
         name: '',
+        nickname: '',
         isConnectedLocal: false,
         isConnectedRemote: false,
         isRequested: false,
+        isError: false,
     };
 
     componentWillMount() {
@@ -395,113 +399,113 @@ class LoginPage extends Component {
         //console.log('enableVideo', enableVideo);
     };
 
-    handleCreateAccount = (e, status) => {
-        e.preventDefault();
+    // handleCreateAccount = (e, status) => {
+    //     e.preventDefault();
 
-        let nextStatus = null, send_data = null;
+    //     let nextStatus = null, send_data = null;
 
-        switch (status) {
-            case 'SignUp':
-                send_data = {
-                    category: 'public',
-                    service: 'SignUp',
-                    account: this.state.email,
-                }
-                nextStatus = 'VerifyCertificationCode';
-                break;
-            case 'VerifyCertificationCode':
-                send_data = {
-                    category: 'public',
-                    service: 'VerifyCertificationCode',
-                    account: this.state.email,
-                    code: this.state.accessCode,
-                }
-                // nextStatus = 'SignUpPassword';
-                break;
-            case 'SignUpPassword':
-                send_data = {
-                    category: 'public',
-                    service: 'SignUpPassword',
-                    account: this.state.email,
-                    password: this.state.password,
-                }
-                nextStatus = 'SignUpComplete';
-                break;
-            case 'SignUpComplete':
-                let access_token = sessionStorage.getItem('access_token');
-                send_data = {
-                    category: 'private',
-                    service: 'SignUpComplete',
-                    access_token: access_token,
-                    name: this.state.name,
-                }
-                nextStatus = 'connected';
-                break;
-            case 'SignIn':
-                send_data = {
-                    category: 'public',
-                    service: 'SignIn',
-                    account: this.state.email,
-                    password: this.state.password,
-                }
-                // nextStatus = 'connected';
-                break;
-            case 'SignInSlave':
-                send_data = {
-                    category: 'slave',
-                    service: 'SignInSlave',
-                    account: this.state.email,
-                    password: this.state.password,
-                }
-                // nextStatus = 'connected';
-                break;
+    //     switch (status) {
+    //         case 'SignUp':
+    //             send_data = {
+    //                 category: 'public',
+    //                 service: 'SignUp',
+    //                 account: this.state.email,
+    //             }
+    //             nextStatus = 'VerifyCertificationCode';
+    //             break;
+    //         case 'VerifyCertificationCode':
+    //             send_data = {
+    //                 category: 'public',
+    //                 service: 'VerifyCertificationCode',
+    //                 account: this.state.email,
+    //                 code: this.state.accessCode,
+    //             }
+    //             // nextStatus = 'SignUpPassword';
+    //             break;
+    //         case 'SignUpPassword':
+    //             send_data = {
+    //                 category: 'public',
+    //                 service: 'SignUpPassword',
+    //                 account: this.state.email,
+    //                 password: this.state.password,
+    //             }
+    //             nextStatus = 'SignUpComplete';
+    //             break;
+    //         case 'SignUpComplete':
+    //             let access_token = sessionStorage.getItem('access_token');
+    //             send_data = {
+    //                 category: 'private',
+    //                 service: 'SignUpComplete',
+    //                 access_token: access_token,
+    //                 name: this.state.name,
+    //             }
+    //             nextStatus = 'connected';
+    //             break;
+    //         case 'SignIn':
+    //             send_data = {
+    //                 category: 'public',
+    //                 service: 'SignIn',
+    //                 account: this.state.email,
+    //                 password: this.state.password,
+    //             }
+    //             // nextStatus = 'connected';
+    //             break;
+    //         case 'SignInSlave':
+    //             send_data = {
+    //                 category: 'slave',
+    //                 service: 'SignInSlave',
+    //                 account: this.state.email,
+    //                 password: this.state.password,
+    //             }
+    //             // nextStatus = 'connected';
+    //             break;
 
-            default:
-                console.log('handleCreateAccount status error: ', status);
-                return;
-        }
+    //         default:
+    //             console.log('handleCreateAccount status error: ', status);
+    //             return;
+    //     }
 
-        fetch('/api/', {
-            method: 'post',
-            headers: {'Content-type': 'application/json'},
-            body: JSON.stringify({
-                "data": send_data
-            })
-        })
-            .then(res => res.json())
-            .then(json => {
+    //     fetch('/api/', {
+    //         method: 'post',
+    //         headers: {'Content-type': 'application/json'},
+    //         body: JSON.stringify({
+    //             "data": send_data
+    //         })
+    //     })
+    //         .then(res => res.json())
+    //         .then(json => {
 
-                console.log('service OK', send_data.service, json)
-                if (json.err) {
-                    if (json.err === 'verifying') {
-                        this.setState({
-                            loginStatus: 'VerifyCertificationCode'
-                        })
-                    }
-
-
-                } else {
-
-                    if (status === 'SignUpPassword') {
-                        sessionStorage.setItem('access_info', JSON.stringify(json.data));
-                    } else if (status === 'SignIn') {
-
-                        sessionStorage.setItem('access_info', JSON.stringify(json.data));
-                        this.props.login();
-                        return;
-                    }
-
-                    // json.data.platform
-                    this.setState({
-                        loginStatus: nextStatus
-                    })
-                }
-
-            })
-            .catch(err => console.log(err));
+    //             console.log('service OK', send_data.service, json)
+    //             if (json.err) {
+    //                 if (json.err === 'verifying') {
+    //                     this.setState({
+    //                         loginStatus: 'VerifyCertificationCode'
+    //                     })
+    //                 }
 
 
-    };
+    //             } else {
+
+    //                 if (status === 'SignUpPassword') {
+    //                     sessionStorage.setItem('access_info', JSON.stringify(json.data));
+    //                 } else if (status === 'SignIn') {
+
+    //                     sessionStorage.setItem('access_info', JSON.stringify(json.data));
+    //                     this.props.login();
+    //                     return;
+    //                 }
+
+    //                 // json.data.platform
+    //                 this.setState({
+    //                     loginStatus: nextStatus
+    //                 })
+    //             }
+
+    //         })
+    //         .catch(err => console.log(err));
+
+
+    // };
 
     validateAccessToken = () => {
         const access_info = JSON.parse(sessionStorage.getItem('access_info'));
@@ -534,9 +538,13 @@ class LoginPage extends Component {
                 })
             } else {
                 // json.data.platform
-                this.setState({
-                    loginStatus: 'LoginCompleted',
-                })
+                if ( json.data.status === 'active' ) {
+                    this.props.login();
+                } else {
+                    this.setState({
+                        loginStatus: 'Login',
+                    })
+                }
             }
         }).catch(
             err => console.log(err)
@@ -552,6 +560,13 @@ class LoginPage extends Component {
 
         const nextStatus = status;
         let send_data = null;
+        
+        const access_info = JSON.parse(sessionStorage.getItem('access_info'));
+        let accessToken = '';
+        if (access_info) {
+            accessToken = access_info.access_token
+        }
+        console.log('accessToken', accessToken);
 
         if ( loginStatus === 'SignUp' ) {
             send_data = {
@@ -559,12 +574,56 @@ class LoginPage extends Component {
                 service: 'SignUp',
                 account: this.state.email,
             };
-        } else if ( loginStatus === 'SignUpPassword' ) {
+        } else if ( loginStatus === 'GetUserStatus' ) {
             send_data = {
                 category: 'public',
-                service: 'SignUp',
+                service: 'GetUserStatus',
                 account: this.state.email,
             };
+        } else if ( loginStatus === 'SignIn' ) {
+            send_data = {
+                category: 'public',
+                service: 'SignIn',
+                account: this.state.email,
+                password: this.state.password,
+            };
+        } else if ( loginStatus === 'VerifyCertificationCode' ) {
+            send_data = {
+                category: 'public',
+                service: 'VerifyCertificationCode',
+                account: this.state.email,
+                code: this.state.verification_code,
+            };
+        } else if ( loginStatus === 'SignUpPassword' ) {
+            this.newPassword = this.state.password;
+            this.setState({
+                loginStatus: status,
+            });
+            return;
+        } else if ( loginStatus === 'SignUpPasswordConfirm' ) {
+            if ( this.newPassword === this.state.password ) {
+                send_data = {
+                    category: 'public',
+                    service: 'SignUpPassword',
+                    account: this.state.email,
+                    password: this.state.password,
+                };
+            } else {
+                this.setState({
+                    isError: true,
+                })
+                return;
+            }
+        } else if ( loginStatus === 'UpdateUserInformation' ) {
+            send_data = {
+                category: 'private',
+                service: 'UpdateUserInformation',
+                access_token: accessToken,
+                nickname: this.state.nickname,
+            };            
+        } else if ( loginStatus === 'LoginComplete' ) {
+            this.props.login()
+            return
         } else {
 
         }
@@ -582,36 +641,95 @@ class LoginPage extends Component {
             .then(res => res.json())
             .then(json => {
 
-                console.log('service OK 1', send_data.service, json);
-                let start = new Date().getTime();
-                while (new Date().getTime() < start + 3000);
-                console.log('service OK 2', send_data.service, json);
+                // console.log('service OK 1', send_data.service, json);
+                // let start = new Date().getTime();
+                // while (new Date().getTime() < start + 3000);
 
                 this.setState({
                     isRequested: false,
                 });
                 if (json.err) {
-                    if (json.err === 'verifying') {
-                        this.setState({
-                            loginStatus: 'VerifyCertificationCode'
-                        })
-                    }
+                    console.log('service 실패', send_data.service, status, json);
+                    this.setState({
+                        isError: true,
+                    });
+                    // if (json.err === 'verifying') {
+                    //     if ( loginStatus === 'SignIn' ) {
+                    //         this.setState({
+                    //             loginStatus: 'VerifyCertificationCode'
+                    //         })
+                    //     } else {
+                    //         this.setState({
+                    //             isError: true,
+                    //         })
+                    //     }
+                    // } else if (json.err === 'password') {
+                    //     if ( loginStatus === 'SignIn' || loginStatus === 'VerifyCertificationCode') {
+                    //         this.setState({
+                    //             loginStatus: 'SignUpPassword'
+                    //         })
+                    //     } else {
+                    //         this.setState({
+                    //             isError: true,
+                    //         })
+                    //     }
+                    // } else if (json.err === 'information') {
+                    //     if ( loginStatus === 'SignIn' || loginStatus === 'SignUpPasswordConfirm') {
+                    //         this.setState({
+                    //             loginStatus: 'UpdateUserInformation'
+                    //         });
+                    //     } else {
+                    //         this.setState({
+                    //             isError: true,
+                    //         })
+                    //     }
+                    // } else {
+                    //     this.setState({
+                    //         isError: true,
+                    //     })
+                    // }
                 } else {
-                    if (status === 'SignUpPassword') {
+                    console.log('service 성공', send_data.service, status, json);
+                    if (loginStatus === 'SignUpPasswordConfirm') {
                         sessionStorage.setItem('access_info', JSON.stringify(json.data));
-                    } else if (status === 'SignIn') {
+                        this.setState({
+                            loginStatus: nextStatus,
+                            isError: false,
+                        })
+                    } else if (loginStatus === 'SignIn') {
                         sessionStorage.setItem('access_info', JSON.stringify(json.data));
                         this.props.login();
-                        return;
+                    } else if ( loginStatus === 'GetUserStatus' ) {
+                        if ( json.data.status === 'verifying' ) {
+                            this.setState({
+                                loginStatus: 'VerifyCertificationCode',
+                                isError: false,
+                            })
+                        } else if ( json.data.status === 'password' ) {
+                            this.setState({
+                                loginStatus: 'SignUpPassword',
+                                isError: false,
+                            })
+                        } else if ( json.data.status === 'information' ) {
+                            this.setState({
+                                loginStatus: 'UpdateUserInformation',
+                                isError: false,
+                            })
+                        } else {
+                            this.setState({
+                                loginStatus: nextStatus,
+                                isError: false,
+                            })
+                        }
+                    } else {
+                        console.log('service OK 3', send_data.service, json);
+                        // json.data.platform
+                        this.setState({
+                            loginStatus: nextStatus,
+                            isError: false,
+                        })
                     }
-
-                    console.log('service OK 3', send_data.service, json);
-                    // json.data.platform
-                    this.setState({
-                        loginStatus: nextStatus
-                    })
                 }
-
             })
             .catch(err => console.log(err));
     };
@@ -662,45 +780,44 @@ class LoginPage extends Component {
             },
         }));
         const { loginStatus, isConnectedLocal, isConnectedRemote } = this.state;
-        const {handleCreateAccount, handleFormEvent, handleChange, handleStream, handleError, validateAccessToken} = this;
+        const { handleFormEvent, handleChange, handleStream, handleError, validateAccessToken } = this;
         let inputArea = null;
 
         console.log('SWS', 'loginStatus', loginStatus);
             switch (loginStatus) {
                 case 'create':
-                    inputArea = <Fragment>
-                        <form onSubmit={(e) => handleCreateAccount(e, 'SignUp')}>
-                            <input name='email' value={this.state.email} onChange={handleChange} required
-                                   placeholder='Email' autoComplete='off'/>
-                            <input className='button' type='submit' value='NEXT'/>
-                        </form>
-                    </Fragment>;
+                    // inputArea = <Fragment>
+                    //     <form onSubmit={(e) => handleCreateAccount(e, 'SignUp')}>
+                    //         <input name='email' value={this.state.email} onChange={handleChange} required
+                    //                placeholder='Email' autoComplete='off'/>
+                    //         <input className='button' type='submit' value='NEXT'/>
+                    //     </form>
+                    // </Fragment>;
                     break;
-                case 'VerifyCertificationCode':
-                    inputArea = <Fragment>
-                        <form onSubmit={(e) => handleCreateAccount(e, 'VerifyCertificationCode')}>
-                            <input name='access_code' value='' onChange={handleChange} required
-                                   placeholder='Access Code' autoComplete='off'/>
-                            <input className='button' type='submit' value='NEXT'/>
-                        </form>
-                    </Fragment>;
-                    break;
-                case 'SignUpPassword':
-                    inputArea = <form onSubmit={(e) => handleCreateAccount(e, 'SignUpPassword')}>
-                        <input type='password' name='password' value={this.state.password} onChange={handleChange}
-                               required placeholder='Password' autoComplete='off'/>
-                        <input type='password' name='password_confirm' value={this.state.password_confirm}
-                               onChange={handleChange} required placeholder='Confirm Password' autoComplete='off'/>
-                        <input className='button' type='submit' value='NEXT'/>
-                    </form>;
-                    break;
-                case 'SignUpComplete':
-                    inputArea = <form onSubmit={(e) => handleCreateAccount(e, 'SignUpComplete')}>
-                        <input name='name' value={this.state.name} onChange={handleChange} required
-                               placeholder='Full Name' autoComplete='off'/>
-                        <input className='button' type='submit' value='CONFIRM'/>
-                    </form>;
-                    break;
+                    // inputArea = <Fragment>
+                    //     <form onSubmit={(e) => handleCreateAccount(e, 'VerifyCertificationCode')}>
+                    //         <input name='verification_code' value='' onChange={handleChange} required
+                    //                placeholder='Access Code' autoComplete='off'/>
+                    //         <input className='button' type='submit' value='NEXT'/>
+                    //     </form>
+                    // </Fragment>;
+                    // break;
+                // case 'SignUpPassword':
+                //     // inputArea = <form onSubmit={(e) => handleCreateAccount(e, 'SignUpPassword')}>
+                //     //     <input type='password' name='password' value={this.state.password} onChange={handleChange}
+                //     //            required placeholder='Password' autoComplete='off'/>
+                //     //     <input type='password' name='password_confirm' value={this.state.password_confirm}
+                //     //            onChange={handleChange} required placeholder='Confirm Password' autoComplete='off'/>
+                //     //     <input className='button' type='submit' value='NEXT'/>
+                //     // </form>;
+                //     break;
+                // case 'SignUpComplete':
+                //     // inputArea = <form onSubmit={(e) => handleCreateAccount(e, 'SignUpComplete')}>
+                //     //     <input name='name' value={this.state.name} onChange={handleChange} required
+                //     //            placeholder='Full Name' autoComplete='off'/>
+                //     //     <input className='button' type='submit' value='CONFIRM'/>
+                //     // </form>;
+                //     break;
                 case 'find':
 
                     // const title = 'MOMO-1';
@@ -807,10 +924,17 @@ class LoginPage extends Component {
                         </Button>
                     </Fragment>;
                     break;
-                case 'SignInPassword':
+                case 'SignIn':
                     inputArea = <Fragment>
-                        <form onSubmit={(e) => handleFormEvent(e, 'SignIn')}>
+                        {this.state.isRequested ?
+                            <div className={'loading'}>
+                                <CustomLoader/>
+                            </div> : ''
+                        }
+                        <form onSubmit={(e) => handleFormEvent(e, 'LoginCompleted')}>
                             <TextField
+                                error={this.state.isError}
+                                helperText={this.state.isError?'비밀번호가 일치하지 않습니다':'비밀번호를 입력하세요'}
                                 key="outlined-password-input"
                                 id="outlined-password-input"
                                 className='signin-input'
@@ -820,22 +944,22 @@ class LoginPage extends Component {
                                 autoComplete="current-password"
                                 margin="normal"
                                 variant="outlined"
-                                value={this.state.password}
                                 onChange={handleChange}
+                                autoFocus
                             />
                             <Button
                                 variant="contained"
                                 color="primary"
                                 className='signin-button'
                                 // className={classes.button}
-                                onClick={() => this.setState({loginStatus: 'Validate'})}>
+                                onClick={(e) => handleFormEvent(e, 'LoginCompleted')}>
                                 로그인
                             </Button>
                             <IconButton
                                 color="primary"
                                 className={'back-button'}
                                 aria-label="Back"
-                                onClick={() => this.setState({loginStatus: 'SignIn'})}>
+                                onClick={() => this.setState({isError: false, loginStatus: 'GetUserStatus'})}>
                                 <ReturnIcon />
                             </IconButton>
                         </form>
@@ -849,20 +973,67 @@ class LoginPage extends Component {
                     //     <input className='button' type='submit' value='CONNECT'/>
                     // </form>;
                     break;
-                case 'SignIn':
+                case 'UpdateUserInformation':
                     inputArea = <Fragment>
-                        <form onSubmit={(e) => handleFormEvent(e, 'SignInPassword')}>
+                        {this.state.isRequested ?
+                            <div className={'loading'}>
+                                <CustomLoader/>
+                            </div> : ''
+                        }
+                        <form onSubmit={(e) => handleFormEvent(e, 'Login')}>
                             <TextField
-                                key="outlined-email-input"
-                                id="outlined-email-input"
+                                error={this.state.isError}
+                                helperText={this.state.isError?'이미 사용 중입니다.' : '별명을 입력하세요'}
+                                key="outlined-nickname-input"
+                                id="outlined-nickname-input"
                                 className='signin-input'
-                                label="Email"
-                                type="email"
-                                name="email"
-                                autoComplete="email"
+                                label="Your nickname"
+                                type="nickname"
+                                name="nickname"
                                 margin="normal"
                                 variant="outlined"
-                                value={this.state.email}
+                                onChange={handleChange}
+                                autoFocus
+                            />
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                className='signin-button'
+                                // className={classes.button}
+                                onClick={(e) => handleFormEvent(e, 'LoginCompleted')}>
+                                다음
+                            </Button>
+                            <IconButton
+                                color="primary"
+                                className={'back-button'}
+                                aria-label="Back"
+                                onClick={() => this.setState({isError: false, loginStatus: 'Login'})}>
+                                <ReturnIcon />
+                            </IconButton>
+                        </form>
+                    </Fragment>;
+                    break;
+                case 'SignUpPasswordConfirm':
+                    inputArea = <Fragment>
+                        {this.state.isRequested ?
+                            <div className={'loading'}>
+                                <CustomLoader/>
+                            </div> : ''
+                        }
+                        <form onSubmit={(e) => handleFormEvent(e, 'UpdateUserInformation')}>
+                            <TextField
+                                error={this.state.isError}
+                                helperText={this.state.isError?'비밀번호가 일치하지 않습니다':'비밀번호를 한번 더 입력하세요'}
+                                key="outlined-confirm-password-input"
+                                id="outlined-confirm-password-input"
+                                className='signin-input'
+                                label="Confirm Password"
+                                type="password"
+                                name="password"
+                                autoComplete="current-password"
+                                margin="normal"
+                                variant="outlined"
+                                autoFocus
                                 onChange={handleChange}
                             />
                             <Button
@@ -870,20 +1041,72 @@ class LoginPage extends Component {
                                 color="primary"
                                 className='signin-button'
                                 // className={classes.button}
-                                onClick={() => this.setState({loginStatus: 'SignInPassword'})}>
+                                onClick={(e) => handleFormEvent(e, 'UpdateUserInformation')}>
                                 다음
                             </Button>
                             <IconButton
                                 color="primary"
                                 className={'back-button'}
                                 aria-label="Back"
-                                onClick={() => this.setState({loginStatus: 'Login'})}>
+                                onClick={() => this.setState({isError: false, loginStatus: 'SignUpPassword'})}>
                                 <ReturnIcon />
                             </IconButton>
                         </form>
                     </Fragment>;
+
+                    // inputArea = <form onSubmit={(e) => handleCreateAccount(e, 'SignIn')}>
+                    //     <input name='email' value={this.state.email} onChange={handleChange} required
+                    //            placeholder='Email' autoComplete='off'/>
+                    //     <input type='password' name='password' value={this.state.password} onChange={handleChange}
+                    //            required placeholder='Password' autoComplete='off'/>
+                    //     <input className='button' type='submit' value='CONNECT'/>
+                    // </form>;
                     break;
-                case 'SignUp':
+                case 'SignUpPassword':
+                    inputArea = <Fragment>
+                        <form onSubmit={(e) => handleFormEvent(e, 'SignUpPasswordConfirm')}>
+                            <TextField
+                                error={this.state.isError}
+                                helperText={this.state.isError?' ':'비밀번호를 입력하세요'}
+                                key="outlined-new-password-input"
+                                id="outlined-new-password-input"
+                                className='signin-input'
+                                label="New Password"
+                                type="password"
+                                name="password"
+                                autoComplete="current-password"
+                                margin="normal"
+                                variant="outlined"
+                                onChange={handleChange}
+                                autoFocus
+                            />
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                className='signin-button'
+                                // className={classes.button}
+                                onClick={(e) => handleFormEvent(e, 'SignUpPasswordConfirm')}>
+                                다음
+                            </Button>
+                            <IconButton
+                                color="primary"
+                                className={'back-button'}
+                                aria-label="Back"
+                                onClick={() => this.setState({isError: false, loginStatus: 'SignUp'})}>
+                                <ReturnIcon />
+                            </IconButton>
+                        </form>
+                    </Fragment>;
+
+                    // inputArea = <form onSubmit={(e) => handleCreateAccount(e, 'SignIn')}>
+                    //     <input name='email' value={this.state.email} onChange={handleChange} required
+                    //            placeholder='Email' autoComplete='off'/>
+                    //     <input type='password' name='password' value={this.state.password} onChange={handleChange}
+                    //            required placeholder='Password' autoComplete='off'/>
+                    //     <input className='button' type='submit' value='CONNECT'/>
+                    // </form>;
+                    break;
+                case 'VerifyCertificationCode':
                     inputArea = <Fragment>
                         {this.state.isRequested ?
                             <div className={'loading'}>
@@ -892,16 +1115,18 @@ class LoginPage extends Component {
                         }
                         <form onSubmit={(e) => handleFormEvent(e, 'SignUpPassword')}>
                             <TextField
-                                key="outlined-email-input"
-                                id="outlined-email-input"
+                                error={this.state.isError}
+                                helperText={this.state.isError?'보안 코드가 틀렸습니다' : '이메일로 보안 코드를 전송했습니다'}
+                                key="outlined-code-input"
+                                id="outlined-code-input"
                                 className='signin-input'
-                                label="Email"
-                                type="email"
-                                name="email"
+                                label="Code"
+                                type="verification_code"
+                                name="verification_code"
                                 autoComplete="email"
                                 margin="normal"
                                 variant="outlined"
-                                value={this.state.email}
+                                autoFocus
                                 onChange={handleChange}
                             />
                             <Button
@@ -916,7 +1141,90 @@ class LoginPage extends Component {
                                 color="primary"
                                 className={'back-button'}
                                 aria-label="Back"
-                                onClick={() => this.setState({loginStatus: 'Login'})}>
+                                onClick={() => this.setState({isError: false, loginStatus: 'GetUserStatus'})}>
+                                <ReturnIcon />
+                            </IconButton>
+                        </form>
+                    </Fragment>;
+                    break;
+                case 'GetUserStatus':
+                    inputArea = <Fragment>
+                        {this.state.isRequested ?
+                            <div className={'loading'}>
+                                <CustomLoader/>
+                            </div> : ''
+                        }
+                        <form onSubmit={(e) => handleFormEvent(e, 'SignIn')}>
+                            <TextField
+                                error={this.state.isError}
+                                helperText={this.state.isError? '이메일이 존재하지 않습니다' :'이메일을 입력하세요'}
+                                key="outlined-email-input"
+                                id="outlined-email-input"
+                                className='signin-input'
+                                label="Email"
+                                type="email"
+                                name="email"
+                                autoComplete="email"
+                                margin="normal"
+                                variant="outlined"
+                                value={this.state.email}
+                                onChange={handleChange}
+                            />
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                className='signin-button'
+                                // className={classes.button}
+                                onClick={(e) => handleFormEvent(e, 'SignIn')}>
+                                다음
+                            </Button>
+                            <IconButton
+                                color="primary"
+                                className={'back-button'}
+                                aria-label="Back"
+                                onClick={() => this.setState({isError: false, loginStatus: 'Login'})}>
+                                <ReturnIcon />
+                            </IconButton>
+                        </form>
+                    </Fragment>;
+                    break;
+                case 'SignUp':
+                    inputArea = <Fragment>
+                        {this.state.isRequested ?
+                            <div className={'loading'}>
+                                <CustomLoader/>
+                            </div> : ''
+                        }
+                        <form onSubmit={(e) => handleFormEvent(e, 'VerifyCertificationCode')}>
+                            <TextField
+                                error={this.state.isError}
+                                helperText={this.state.isError? '이미 가입한 이메일입니다' :'신규 가입할 이메일 주소를 입력하세요'}
+                                key="outlined-email-input"
+                                id="outlined-email-input"
+                                className='signin-input'
+                                label="Email"
+                                type="email"
+                                name="email"
+                                autoComplete="email"
+                                margin="normal"
+                                variant="outlined"
+                                value={this.state.email}
+                                onChange={handleChange}
+                                />
+                            
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                className='signin-button'
+                                // className={classes.button}
+                                onClick={(e) => handleFormEvent(e, 'VerifyCertificationCode')}>
+                                다음
+                            </Button>
+                            <IconButton
+                                color="primary"
+                                className={'back-button'}
+                                aria-label="Back"
+                                onClick={() => this.setState({isError: false, loginStatus: 'Login'})}>
                                 <ReturnIcon />
                             </IconButton>
                         </form>
@@ -931,7 +1239,7 @@ class LoginPage extends Component {
                             color="primary"
                             className='signin-button'
                             // className={classes.button}
-                            onClick={() => this.setState({loginStatus: 'SignIn'})}>
+                            onClick={() => this.setState({loginStatus: 'GetUserStatus'})}>
                             로그인
                         </Button>
                         <div className="button-padding"/>
