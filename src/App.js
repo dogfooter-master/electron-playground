@@ -8,11 +8,22 @@ class App extends Component {
   state = {
     isLogin: false,
     reload: true,
+    localMessage: '',
+    remoteMessage: '',
+    onRemoteMessage: null,
+    onLocalMessage: null,
+    user: {},
   };
-  login = () => {
-    this.setState({
-      isLogin: true,
-    });
+  login = (user) => {
+    if ( user ) {
+      this.setState({
+        isLogin: true,
+        user: user,
+      });
+    } else {
+      this.setState({
+        isLogin: true,
+      });}
   };
   logout = () => {
     this.setState({
@@ -42,6 +53,12 @@ class App extends Component {
   };
   onMessageRemote = (e) => {
     console.log('onMessageRemote', e);
+    this.setState({
+      onRemoteMessage: e,
+    });
+    this.setState({
+      onRemoteMessage: null,
+    });
   };
   onCloseRemote = () => {
     console.log('onCloseRemote');
@@ -64,6 +81,33 @@ class App extends Component {
   };
   onMessageLocal = (e) => {
     console.log('onMessageLocal', e);
+    this.setState({
+      onLocalMessage: e,
+    });
+    this.setState({
+      onLocalMessage: null,
+    });
+  };
+  changeLocalMessage = (msg) => {
+    console.log('changeLocalMessage', msg);
+    this.setState({
+      localMessage: msg,
+    })
+  };
+  changeRemoteMessage = (msg) => {
+    this.setState({
+      remoteMessage: msg,
+    })
+  };
+  clearLocalMessage = () => {
+    this.setState({
+      localMessage: null,
+    });
+  };
+  clearRemoteMessage = () => {
+    this.setState({
+      remoteMessage: null,
+    });
   };
   onCloseLocal = () => {
     console.log('onCloseLocal');
@@ -75,8 +119,9 @@ class App extends Component {
   };
   render () {
     console.log('SWS', 'DEBUG1', 'App', this.state);
-    const {isLogin, reload} = this.state;
-    const {login, logout, clearReloadState, onMessageRemote, onOpenRemote, onCloseRemote, onMessageLocal, onOpenLocal, onCloseLocal} = this;
+    const {isLogin, reload, localMessage, remoteMessage, onLocalMessage, onRemoteMessage } = this.state;
+    const {login, logout, clearReloadState, onMessageRemote, onOpenRemote, onCloseRemote, onMessageLocal, onOpenLocal, onCloseLocal, changeLocalMessage, changeRemoteMessage, clearLocalMessage, clearRemoteMessage } = this;
+
 
     return (
       <Fragment>
@@ -91,10 +136,19 @@ class App extends Component {
             onOpenLocalProps={onOpenLocal}
             onCloseLocalProps={onCloseLocal}
             onCloseRemoteProps={onCloseRemote}
+            localMessage={localMessage}
+            remoteMessage={remoteMessage}
+            clearLocalMessage={clearLocalMessage}
+            clearRemoteMessage={clearRemoteMessage}
         />
         {isLogin ?
             <MainPage
-                login={login}
+                logout={logout}
+                user={this.state.user}
+                changeLocalMessage={changeLocalMessage}
+                changeRemoteMessage={changeRemoteMessage}
+                onLocalMessage={onLocalMessage}
+                onRemoteMessage={onRemoteMessage}
             /> :
             <LoginPage
                 logout={logout}

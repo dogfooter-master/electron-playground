@@ -1,0 +1,27 @@
+@import '../../../styles/common.scss';
+@import '../../../styles/base.scss';
+
+
+.viewer {
+    position: absolute;
+    padding: 35px;
+    //top: 2px;
+    // left: -379px;
+    //right: 2px;
+    //min-width: 1513px;
+    //width: calc(100vw - 400px);
+    //height: calc(100% - 2px);
+    //background-color: #fff;
+    // box-shadow: 16px 0px 29px 0 rgba(27, 40, 54, 0.38);
+    // box-shadow: 5px 6px 14px -10px rgba(0,0,0,0.75);
+    //border: 1px solid gray;
+    //border-top: 5px solid #00a5bd;
+    //z-index: 9;
+    min-width: 800px;
+
+    .webrtc-canvas {
+      display: block;
+      width: 800px;
+      height: 450px;
+    }
+} 

@@ -3,9 +3,8 @@ import Header from '../../components/headerArea/Header';
 
 class HeaderContainer extends Component {
     render() {
-        console.log('SWS', 'DEBUG4', 'HeaderContainer');
         return <Fragment>
-                <Header/>
+                <Header user={this.props.user}/>
             </Fragment>
     }
 }

@@ -7,6 +7,7 @@ import IconButton from '@material-ui/core/IconButton';
 import ReturnIcon from '@material-ui/icons/KeyboardBackspace';
 import TextField from '@material-ui/core/TextField';
 
+const os = window.require('os');
 const { desktopCapturer } = window.require('electron');
 
 
@@ -39,6 +40,7 @@ class LoginPage extends Component {
         this.windowImage = null;
         this.windowImageUrl = null;
         this.newPassword = '';
+        this.pcName = '';
     }
     state = {
         loginStatus: '',
@@ -59,6 +61,8 @@ class LoginPage extends Component {
     }
 
     componentDidMount() {
+        this.pcName = os.hostname();
+        console.log('컴퓨터 이름', this.pcName);
         /*
         const {onLogin, onOffer, onAnswer, onCandidate, onLeave, onConnected, onOfferDataChannel, onCandidateDataChannel } = this;
         this.connection = new WebSocket('ws://localhost:7070');
@@ -539,7 +543,16 @@ class LoginPage extends Component {
             } else {
                 // json.data.platform
                 if ( json.data.status === 'active' ) {
-                    this.props.login();
+                    let user = {
+                        nickname: json.data.nickname,
+                        access_token: json.data.access_token,
+                    };
+                    if ( json.data.pc ) {
+                        user.pc = json.data.pc;
+                    } else {
+                        user.pc = this.pcName;
+                    }
+                    this.props.login(user)
                 } else {
                     this.setState({
                         loginStatus: 'Login',
@@ -622,7 +635,11 @@ class LoginPage extends Component {
                 nickname: this.state.nickname,
             };            
         } else if ( loginStatus === 'LoginComplete' ) {
-            this.props.login()
+            this.props.login({
+                nickname: this.state.nickname,
+                pc : this.pcName,
+                access_token: accessToken,
+            });
             return
         } else {
 
@@ -698,7 +715,11 @@ class LoginPage extends Component {
                         })
                     } else if (loginStatus === 'SignIn') {
                         sessionStorage.setItem('access_info', JSON.stringify(json.data));
-                        this.props.login();
+                        this.props.login({
+                            nickname: this.state.nickname,
+                            pc : this.pcName,
+                            access_token: json.data.access_token,
+                        });
                     } else if ( loginStatus === 'GetUserStatus' ) {
                         if ( json.data.status === 'verifying' ) {
                             this.setState({

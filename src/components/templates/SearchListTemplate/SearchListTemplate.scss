@@ -6,7 +6,7 @@
     flex-direction: column;
     padding: 20px 10px 0px 15px;
 
-    $search-height: 172px;
+    $search-height: 70px;
     .search {
         height: $search-height;
         // flex: 2;
@@ -16,7 +16,7 @@
     .result {
         position: relative;
         height: calc(100% - #{$search-height});
-        max-height: 1500px;
+        max-height: 400px;
         // flex: 20;
         overflow-y: auto;
         // overflow: auto;

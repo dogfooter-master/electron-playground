@@ -198,7 +198,7 @@ class WsContainer extends Component {
     //     return !!nextProps.sendMessage;
     // }
     shouldComponentUpdate = (nextProps, nextState) => {
-        const {clientToken, sendMessage, reload, clearReloadState} = nextProps;
+        const {clientToken, localMessage, remoteMessage, reload, clearReloadState, clearLocalMessage, clearRemoteMessage} = nextProps;
         console.log('DEBUG', 'reload', reload);
         if (reload) {
             if (this.refWebsocketRemote) {
@@ -212,16 +212,15 @@ class WsContainer extends Component {
             clearReloadState();
             return true;
         } else {
-            if (sendMessage) {
-                if (sendMessage.service) {
-                    this.sendRemote(JSON.stringify({
-                        data: sendMessage,
-                    }));
-                } else {
-                    this.sendLocal(JSON.stringify({
-                        data: sendMessage,
-                    }));
-                }
+            if ( localMessage ) {
+                this.sendLocal(JSON.stringify(localMessage));
+                clearLocalMessage();
+            }
+            if ( remoteMessage ) {
+                this.sendRemote(JSON.stringify({
+                    data: remoteMessage,
+                }));
+                clearRemoteMessage();
             }
             return false;
         }        

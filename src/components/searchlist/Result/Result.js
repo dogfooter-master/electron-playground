@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import CheckboxList from '../../../components/common/CheckboxList';
 // import { Waypoint } from "react-waypoint";
 
 // import CustomLoader from 'components/common/CustomLoader';
@@ -166,10 +167,12 @@ class Result extends Component {
         //                     />  
         //   }
         // </div>
+        const { rs, handleClick } = this.props;
         return <div className='result'>
-          {
-            <ResultTable />
-          }
+            <CheckboxList
+                results={rs}
+                handleClick={handleClick}
+            />
         </div>
     }
 }

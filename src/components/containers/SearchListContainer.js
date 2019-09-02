@@ -2,15 +2,52 @@ import React, {Component} from 'react';
 import SearchListTemplate from '../../components/templates/SearchListTemplate';
 import Search from '../../components/searchlist/Search';
 import Result from '../../components/searchlist/Result';
+import CustomLoader from "../common/CustomLoader";
+
+const grpc = window.require('grpc');
+const PROTO_PATH = 'public/protos/pikabu.proto';
+console.log('__dirname', __dirname);
+const pikabuProto = grpc.load(PROTO_PATH).pb;
+const client = new pikabuProto.Peekaboo('127.0.0.1:17091', grpc.credentials.createInsecure());
 
 class SearchListContainer extends Component {
 
     // state = {
     //     visitDate: null
     // }
+    state = {
+        keyword: '',
+        rs: [],
+        windowList: [],
+        currentHandle: 0,
+        request: false,
+    };
 
     handleSearch = (value) => {
         console.log('handleSearch', value);
+
+        let req = {
+            keyword: '',
+        };
+        let container = this;
+        client.RefreshWindows(req, function (err, res) {
+            console.log('RefreshWindows', err, res);
+            if (!err && res.window_list) {
+                let list = [];
+                for (let i = 0; i < res.window_list.length; i++) {
+                    list.push(res.window_list[i].title);
+                }
+                container.setState({
+                    rs: list,
+                    windowList: res.window_list,
+                    request: false,
+                })
+            }
+        });
+        this.setState({
+            keyword: value,
+            request: true,
+        });
 
         // const { SearchActions, condition} = this.props;
 
@@ -27,9 +64,9 @@ class SearchListContainer extends Component {
         // SearchActions.setSearchKey(payload);
     }
 
-     handleKeyPress = (e) => {
+    handleKeyPress = (e) => {
         if (e.key === 'Enter') {
-            const { value } = e.target;
+            const {value} = e.target;
             console.log('Enter', value);
             this.handleSearch(value);
         }
@@ -46,7 +83,7 @@ class SearchListContainer extends Component {
 
     handleKeyChange = (e) => {
         // console.log('handleKeyChange', e.target.name, e.target.value)
-        
+
         // const { SearchActions } = this.props;
 
         // const payload = {
@@ -77,7 +114,7 @@ class SearchListContainer extends Component {
 
         // SearchActions.clearSelectedRow();
         // SearchActions.setSearchKey(payload);
-    } 
+    }
 
 
     clickRowId = (id) => {
@@ -119,7 +156,7 @@ class SearchListContainer extends Component {
         // SearchActions[ref.action[1]](selectedData);
 
         // PlaygroundActions.setSelectedImage(fromJS({}));
-        
+
     }
 
     clickTableHeader = (order, order_by) => {
@@ -138,24 +175,24 @@ class SearchListContainer extends Component {
         console.log('GET MESSAGES IN MAINLIST CONTAINER');
 
 
-      //     const THIRTYROWS = 60;
-  
-      //     console.log('getMessages', this, num)
-  
-      //     // if (this.state.filteredMessages) {
-      //         const { filteredMessages } = this.state;
-      //         const messages = this.buildTestData(THIRTYROWS, filteredMessages.length);
-      //         this.setState({
-      //           filteredMessages: [...filteredMessages, ...messages]
-      //         });
-      //     // }
-      //     // else {
-      //         // const messages = this.buildTestData(THIRTYROWS, 0);
-      //         // this.setState({
-      //         //   filteredMessages: messages
-      //         // });
-      //     // }
-        }
+        //     const THIRTYROWS = 60;
+
+        //     console.log('getMessages', this, num)
+
+        //     // if (this.state.filteredMessages) {
+        //         const { filteredMessages } = this.state;
+        //         const messages = this.buildTestData(THIRTYROWS, filteredMessages.length);
+        //         this.setState({
+        //           filteredMessages: [...filteredMessages, ...messages]
+        //         });
+        //     // }
+        //     // else {
+        //         // const messages = this.buildTestData(THIRTYROWS, 0);
+        //         // this.setState({
+        //         //   filteredMessages: messages
+        //         // });
+        //     // }
+    }
 
 
     componentWillMount() {
@@ -175,7 +212,7 @@ class SearchListContainer extends Component {
         //     null,
         //     null,
         //     );
-    
+
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -192,7 +229,7 @@ class SearchListContainer extends Component {
         //     ) {
         //     const access_info = JSON.parse(sessionStorage.getItem('access_info'));
         //     const { SearchActions, clickedRow, searchKey, condition } = this.props;
-            
+
         //     let patient_id = clickedRow.patient.patient_id;
         //     let diagnosis_id = clickedRow.disease.diagnosis_id;
         //     let clicked_patient = null, clicked_disease = null;
@@ -220,7 +257,7 @@ class SearchListContainer extends Component {
         //     if (searchKey.date && searchKey.date.key)
         //         date_keyword_list = [ searchKey.date.key ];
 
-            
+
         //     let order = searchKey[condition].order;
         //     let order_by = searchKey[condition].order_by;
 
@@ -240,15 +277,70 @@ class SearchListContainer extends Component {
 
     }
 
+    handleClick = (item) => {
+        console.log('handleClick', item, this.state.windowList);
+        const access_info = JSON.parse(sessionStorage.getItem('access_info'));
+        let accessToken = '';
+        if (access_info) {
+            accessToken = access_info.access_token
+        }
+
+        const {windowList} = this.state;
+        let hWnd = 0;
+        for (let i = 0; i < windowList.length; i++) {
+            if (windowList[i].title === item) {
+                hWnd = windowList[i].handle;
+                break;
+            }
+        }
+
+        if ( this.state.currentHandle === hWnd ) {
+            let req = {
+                handle: hWnd,
+                label: accessToken,
+            };
+            let container = this;
+            client.EndStreaming(req, function (err, res) {
+                console.log('EndStreaming', err, res);
+            });
+            this.setState({
+                currentHandle: 0,
+            });
+        } else {
+            let req = {
+                handle: hWnd,
+                label: accessToken,
+            };
+            client.StartStreaming(req, function (err, res) {
+                console.log('StartStreaming', err, res);
+            });
+            this.setState({
+                currentHandle: hWnd,
+            });
+        }
+    };
+
+    componentDidMount() {
+        const {handleSearch} = this;
+        handleSearch();
+    }
+
     render() {
-        const { handleSearch, handleKeyPress } = this;
+        const { handleSearch, handleKeyPress, handleClick } = this;
+        const { rs, request } = this.state;
         return (
-            <SearchListTemplate 
-                search={<Search 
-                            handleSearch={handleSearch}                            
-                            handleKeyPress={handleKeyPress}
-                            />}
-                result={<Result />}
+            <SearchListTemplate
+                search={<Search
+                    handleSearch={handleSearch}
+                    handleKeyPress={handleKeyPress}
+                />}
+                result={
+                    request ?
+                        <CustomLoader/>:
+                        <Result
+                    handleClick={handleClick}
+                    rs={rs}
+                />}
             />
         )
 
@@ -269,7 +361,7 @@ class SearchListContainer extends Component {
         //         clickRow, 
         //         clickRowId,
         //         getMessages
-            
+
         //     } = this;
 
         // return (

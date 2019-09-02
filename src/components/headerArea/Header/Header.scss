@@ -10,27 +10,38 @@
     position: relative;
     overflow: hidden;
 
-
+    .user-name {
+        display: inline;
+        //position: absolute;
+        width: 228px;
+        height: 64px;
+        font-family: 'LexiSaebom', sans-serif;
+    }
+    .pc-name {
+        display: inline;
+        //position: absolute;
+        width: 480px;
+        height: 64px;
+    }
+    .setting {
+        display: inline;
+        //position: absolute;
+        width: 100px;
+        height: 64px;
+    }
     .logo {
-        position: absolute;
+        display: inline;
+        //position: absolute;
         top: 10px;
         left: 18px;
-        width: 300px;
+        width: 82px;
         height: 64px;
-
-        display: flex;
+        margin-left: 12px;
         justify-content: center;
         align-items: center;
         background-image: url(/images/flowork_logo.png);
         background-size: contain;
         background-repeat: no-repeat;
-
-        h1 {
-            padding: 5px 10px;
-            text-shadow: 2px 3px 4px gray; 
-            // color: #465c74;
-            // box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.75);
-        }
     }
 
     @keyframes slidein {

@@ -11,6 +11,6 @@ const SearchListTemplate = ({search, result, children}) => {
                 {result}
             </div>
         )
-}
+};
 
 export default SearchListTemplate;
