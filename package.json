@@ -61,5 +61,5 @@
     "typescript": "^3.5.3",
     "wait-on": "^3.3.0"
   },
-  "proxy": "http://lazybird.mynetgear.com:1100"
+  "proxy": "https://dermaster.io"
 }

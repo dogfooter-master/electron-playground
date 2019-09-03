@@ -12,7 +12,8 @@ class WsContainer extends Component {
         // this.setWebsocket = this.setWebsocket.bind(this);
         // this.host = '';
         this.reconnectIntervalInMilliSeconds = 1000;
-        this.remoteHost = 'ws://lazybird.mynetgear.com:1100/ws';
+        // this.remoteHost = 'ws://lazybird.mynetgear.com:1100/ws';
+        this.remoteHost = 'wss://dermaster.io/ws';
         this.localHost = 'ws://localhost:17090/ws';
         this.refWebsocketLocal = null;
         this.refWebsocketRemote = null;
@@ -216,10 +217,9 @@ class WsContainer extends Component {
                 this.sendLocal(JSON.stringify(localMessage));
                 clearLocalMessage();
             }
+            console.log('remoteMessage', remoteMessage);
             if ( remoteMessage ) {
-                this.sendRemote(JSON.stringify({
-                    data: remoteMessage,
-                }));
+                this.sendRemote(JSON.stringify(remoteMessage));
                 clearRemoteMessage();
             }
             return false;

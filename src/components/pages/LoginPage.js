@@ -44,8 +44,8 @@ class LoginPage extends Component {
     }
     state = {
         loginStatus: '',
-        email: 'lazysupport@dermaster.io',
-        password: 'Hotice1234!',
+        email: 'wonsuck_song@lazybird.kr',
+        password: 'Hotice1234',
         password_confirm: '',
         verification_code:'',
         name: '',
@@ -544,6 +544,7 @@ class LoginPage extends Component {
                 // json.data.platform
                 if ( json.data.status === 'active' ) {
                     let user = {
+                        email: json.data.account,
                         nickname: json.data.nickname,
                         access_token: json.data.access_token,
                     };
@@ -636,6 +637,7 @@ class LoginPage extends Component {
             };            
         } else if ( loginStatus === 'LoginComplete' ) {
             this.props.login({
+                email: this.state.email,
                 nickname: this.state.nickname,
                 pc : this.pcName,
                 access_token: accessToken,
@@ -716,6 +718,7 @@ class LoginPage extends Component {
                     } else if (loginStatus === 'SignIn') {
                         sessionStorage.setItem('access_info', JSON.stringify(json.data));
                         this.props.login({
+                            email: this.state.email,
                             nickname: this.state.nickname,
                             pc : this.pcName,
                             access_token: json.data.access_token,

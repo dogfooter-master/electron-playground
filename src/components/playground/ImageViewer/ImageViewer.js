@@ -18,23 +18,176 @@ class ImageViewer extends Component {
         };
         this.windowImage = null;
         this.windowImageUrl = null;
+        this.dataChannelConnection = null;
+        this.stream = null;
+        this.streamConnection = null;
+        this.opponentClientToken = '';
+        this.clientToken = '';
     }
 
     state = {
         isOpenedWebRTCLocal: false,
-        isOpenedWebRTCRemote: true,
+        isOpenedWebRTCRemote: false,
     };
 
     componentDidMount() {
         this.windowImage = new Image();
-        const { startDataChannel } = this;
+        const { startDataChannel, startRemoteWebRTC } = this;
+
+        this.handleStream();
+        startRemoteWebRTC();
         startDataChannel();
     }
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        // this.handleStream();
+    }
 
-    startDataChannel = () => {
-        this.setupDataChannelPeerConnection(this.stream);
+    handleStream = () => {
+        const canvas = document.getElementById('webrtc-local-canvas');
+        this.stream = canvas.captureStream();
+        console.log('stream', this.stream);
+    };
+    startRemoteWebRTC = () => {
+        this.setupPeerConnection();
+    };
+    setupPeerConnection = () => {
+        const { stream, configuration } = this;
+        const { changeRemoteMessage, user } = this.props;
+        const thisComponent = this;
+        const access_info = JSON.parse(sessionStorage.getItem('access_info'));
+        let accessToken = '';
+        if (access_info) {
+            accessToken = access_info.access_token
+        }
+        this.streamConnection = new RTCPeerConnection(configuration);
+
+        console.log('stream - 1', 'setupPeerConnection', stream);
+        this.streamConnection.addStream(stream);
+        this.streamConnection.onaddstream = function(e) {
+            console.log('streamConnection', 'onaddstream', e);
+        };
+        this.streamConnection.onnegotiationneeded = () => {
+            console.log('streamConnection has onnegotiationneeded');
+            thisComponent.setState({
+                isOpenedWebRTCRemote: true,
+            });
+        };
+        this.streamConnection.onicecandidate = function(e) {
+            if (e.candidate) {
+                changeRemoteMessage({
+                    data: {
+                        category: 'ws',
+                        service: 'Candidate',
+                        access_token: accessToken,
+                        opponent_client_token: thisComponent.opponentClientToken,
+                        candidate: {
+                            type: 'candidate',
+                            candidate: e.candidate,
+                        },
+                    }
+                });
+            }
+        };
+
+        let payload = {
+            data: {
+                category: 'ws',
+                service: 'Register',
+                account: user.email,
+                access_token: accessToken,
+            }
+        };
+        changeRemoteMessage(payload);
+        console.log('changeRemoteMessage', payload);
+    };
+    onAnswerStream = (answer) => {
+        this.streamConnection.setRemoteDescription(new RTCSessionDescription(answer));
+    };
+    startToLive = () => {
+        const {changeRemoteMessage} = this.props;
+        const access_info = JSON.parse(sessionStorage.getItem('access_info'));
+        let accessToken = '';
+        if (access_info) {
+            accessToken = access_info.access_token
+        }
+        let payload = {
+            data: {
+                category: 'ws',
+                service: 'StartToLive',
+                access_token: accessToken,
+                opponent_client_token: this.opponentClientToken,
+            }
+        };
+        setTimeout(function () {
+            changeRemoteMessage(payload);
+        }, 1000);
+    };
+    createAnswerStream = (offer) => {
+        const thisComponent = this;
+        const { streamConnection } = this;
+        const { changeRemoteMessage } = this.props;
+        const access_info = JSON.parse(sessionStorage.getItem('access_info'));
+        let accessToken = '';
+        if (access_info) {
+            accessToken = access_info.access_token
+        }
+        streamConnection.setRemoteDescription(new RTCSessionDescription(offer));
+        streamConnection.createAnswer(function (answer) {
+            streamConnection.setLocalDescription(answer);
+
+            console.log('thisComponent.opponentClientToken', thisComponent.opponentClientToken);
+            let payload = {
+                data: {
+                    category: 'ws',
+                    service: 'Answer',
+                    access_token: accessToken,
+                    opponent_client_token: thisComponent.opponentClientToken,
+                    sdp: answer,
+                }
+            };
+            changeRemoteMessage(payload);
+
+        }, function (error) {
+            alert("An error has occurred", error);
+        });
+    }
+    createOfferStream = () => {
+        const thisComponent = this;
+        const { streamConnection } = this;
+        const { changeRemoteMessage } = this.props;
+        streamConnection.createOffer({
+            offerToReceiveAudio: false, offerToReceiveVideo: true,
+        }).then(function (offer) {
+            const access_info = JSON.parse(sessionStorage.getItem('access_info'));
+            let accessToken = '';
+            if (access_info) {
+                accessToken = access_info.access_token
+            }
+
+            console.log('thisComponent.opponentClientToken', thisComponent.opponentClientToken);
+            let payload = {
+                data: {
+                    category: 'ws',
+                    service: 'Offer',
+                    access_token: accessToken,
+                    opponent_client_token: thisComponent.opponentClientToken,
+                    sdp: offer,
+                }
+            };
+            changeRemoteMessage(payload);
+            streamConnection.setLocalDescription(offer);
+        }).catch(function (error) {
+            console.log('SWS', 'An error has occurred.', error);
+        });
+    };
+    onCandidateStream = (candidate) => {
+        console.log('onCandidateStream', candidate);
+        this.streamConnection.addIceCandidate(new RTCIceCandidate(candidate));
     };
 
+    startDataChannel = () => {
+        this.setupDataChannelPeerConnection();
+    };
     setupDataChannelPeerConnection = () => {
         const { windowImage, configuration} = this;
         const { changeLocalMessage, user } = this.props;
@@ -154,7 +307,7 @@ class ImageViewer extends Component {
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
         if ( nextProps.onLocalMessage ) {
-            console.log('shouldComponentUpdate', nextProps.onLocalMessage);
+            console.log('shouldComponentUpdate', 'onLocalMessage', nextProps.onLocalMessage);
             const { onOfferDataChannel, onCandidateDataChannel } = this;
             const message = nextProps.onLocalMessage;
             let s = message.split('\n');
@@ -173,7 +326,41 @@ class ImageViewer extends Component {
                 }
             }
         }
-        return true
+        if ( nextProps.onRemoteMessage ) {
+            console.log('shouldComponentUpdate', 'onRemoteMessage', nextProps.onRemoteMessage);
+            const { onAnswerStream, onCandidateStream, createOfferStream, createAnswerStream, startToLive } = this;
+            const message = nextProps.onRemoteMessage;
+            // let s = message.split('\n');
+            // console.log('shouldComponentUpdate DEBUG', s);
+            // for ( let i = 0; i < s.length; i++ ) {
+            let data = JSON.parse(message);
+            console.log('data', data);
+            switch (data.data.service) {
+                case "Register":
+                    this.clientToken = data.data.client_token;
+                    break;
+                case "ReadyToLive":
+                    this.opponentClientToken = data.data.opponent_client_token;
+                    startToLive();
+                    return false;
+                case "RequestOffer":
+                    createOfferStream();
+                    break;
+                case "Offer":
+                    createAnswerStream(data.data.sdp);
+                    break;
+                case "Answer":
+                    onAnswerStream(data.data.sdp);
+                    break;
+                case "Candidate":
+                    onCandidateStream(data.data.candidate.candidate);
+                    break;
+                default:
+                    break;
+            }
+            // }
+        }
+        return true;
     }
 
     render() {
@@ -210,13 +397,12 @@ class ImageViewer extends Component {
         const { isOpenedWebRTCLocal, isOpenedWebRTCRemote } = this.state;
         const isOpen = ( isOpenedWebRTCLocal && isOpenedWebRTCRemote );
         return <Fragment>
-            {isOpen ?
                 <div className={'viewer'}>
                     <canvas className = {'webrtc-canvas'} id='webrtc-local-canvas'/>
+                    {isOpen ? ''
+                        : <CustomLoader />
+                    }
                 </div>
-                :
-                <CustomLoader />
-            }
         </Fragment>;
     }
 }
