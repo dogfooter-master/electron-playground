@@ -1278,6 +1278,7 @@ class LoginPage extends Component {
                     </Fragment>;
                     break;
                 default:
+                    console.log('isConnectedRemote', isConnectedRemote, 'isConnectedLocal', isConnectedLocal)
                     if ( isConnectedRemote && isConnectedLocal ) {
                         validateAccessToken()
                     }

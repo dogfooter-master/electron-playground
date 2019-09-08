@@ -2,6 +2,13 @@ import React, {Component, Fragment} from 'react';
 import CustomLoader from '../../../components/common/CustomLoader';
 import './ImageViewer.scss';
 
+const os = window.require('os');
+const grpc = window.require('grpc');
+const PROTO_PATH = 'public/protos/pikabu.proto';
+console.log('__dirname', __dirname);
+const pikabuProto = grpc.load(PROTO_PATH).pb;
+const client = new pikabuProto.Peekaboo('127.0.0.1:17091', grpc.credentials.createInsecure());
+
 class ImageViewer extends Component {
     constructor(props) {
         super(props);
@@ -19,15 +26,19 @@ class ImageViewer extends Component {
         this.windowImage = null;
         this.windowImageUrl = null;
         this.dataChannelConnection = null;
+        this.remoteLocalDataChannelConnection = null;
         this.stream = null;
         this.streamConnection = null;
+        this.remoteDataChannelConnection = null;
         this.opponentClientToken = '';
         this.clientToken = '';
+        this.mouseMoveQueue = [];
     }
 
     state = {
         isOpenedWebRTCLocal: false,
         isOpenedWebRTCRemote: false,
+        isOpenedWebRTCRemoteDc: false,
     };
 
     componentDidMount() {
@@ -60,14 +71,11 @@ class ImageViewer extends Component {
             accessToken = access_info.access_token
         }
         this.streamConnection = new RTCPeerConnection(configuration);
-
-        console.log('stream - 1', 'setupPeerConnection', stream);
         this.streamConnection.addStream(stream);
         this.streamConnection.onaddstream = function(e) {
             console.log('streamConnection', 'onaddstream', e);
         };
         this.streamConnection.onnegotiationneeded = () => {
-            console.log('streamConnection has onnegotiationneeded');
             thisComponent.setState({
                 isOpenedWebRTCRemote: true,
             });
@@ -80,6 +88,8 @@ class ImageViewer extends Component {
                         service: 'Candidate',
                         access_token: accessToken,
                         opponent_client_token: thisComponent.opponentClientToken,
+                        channel_type: "stream",
+                        label: thisComponent.opponentClientToken, 
                         candidate: {
                             type: 'candidate',
                             candidate: e.candidate,
@@ -88,13 +98,15 @@ class ImageViewer extends Component {
                 });
             }
         };
-
+        let pcName = os.hostname();
         let payload = {
             data: {
                 category: 'ws',
                 service: 'Register',
                 account: user.email,
                 access_token: accessToken,
+                client_type: "agent",
+                name: pcName,
             }
         };
         changeRemoteMessage(payload);
@@ -102,6 +114,10 @@ class ImageViewer extends Component {
     };
     onAnswerStream = (answer) => {
         this.streamConnection.setRemoteDescription(new RTCSessionDescription(answer));
+    };
+    onAnswerRemoteDataChannel = (answer) => {
+        console.log('onAnswerRemoteDataChannel', answer);
+        this.remoteDataChannelConnection.setRemoteDescription(new RTCSessionDescription(answer));
     };
     startToLive = () => {
         const {changeRemoteMessage} = this.props;
@@ -142,6 +158,8 @@ class ImageViewer extends Component {
                     service: 'Answer',
                     access_token: accessToken,
                     opponent_client_token: thisComponent.opponentClientToken,
+                    label: thisComponent.opponentClientToken, 
+                    channel_type: "stream",
                     sdp: answer,
                 }
             };
@@ -170,7 +188,9 @@ class ImageViewer extends Component {
                     category: 'ws',
                     service: 'Offer',
                     access_token: accessToken,
+                    channel_type: "stream",
                     opponent_client_token: thisComponent.opponentClientToken,
+                    label: thisComponent.opponentClientToken, 
                     sdp: offer,
                 }
             };
@@ -180,9 +200,220 @@ class ImageViewer extends Component {
             console.log('SWS', 'An error has occurred.', error);
         });
     };
+    createOfferRemoteLocalDataChannel = () => {
+        const { changeLocalMessage } = this.props;   
+        const { opponentClientToken } = this;  
+        setTimeout(function() {
+            changeLocalMessage({
+                service: "Connect",
+                type: "remote",
+                label: opponentClientToken,
+            });
+        }, 400);
+    }
+    onOfferRemoteLocalDataChannel = (data) => {
+        // const { remoteLocalDataChannelConnection } = this;
+        const thisComponent = this;
+        const access_info = JSON.parse(sessionStorage.getItem('access_info'));
+        let accessToken = '';
+        if (access_info) {
+            accessToken = access_info.access_token
+        }
+        const { changeRemoteMessage } = this.props;
+        const offer = JSON.parse(data);    
+        console.log('SWS1', offer);    
+        // console.log('thisComponent.opponentClientToken', thisComponent.opponentClientToken);
+        let payload = {
+            data: {
+                category: 'ws',
+                service: 'Offer',
+                access_token: accessToken,
+                channel_type: "data",
+                label: thisComponent.opponentClientToken,
+                opponent_client_token: thisComponent.opponentClientToken,
+                sdp: offer,
+            }
+        }; 
+        setTimeout(function() {
+            changeRemoteMessage(payload);
+        }, 400);
+    };
+    onCandidateLocalToRemoteDataChannel = (candidate) => {
+        const thisComponent = this;
+        const access_info = JSON.parse(sessionStorage.getItem('access_info'));
+        let accessToken = '';
+        if (access_info) {
+            accessToken = access_info.access_token
+        }
+        // console.log('onCandidateDataChannel', candidate);
+        // this.remoteLocalDataChannelConnection.addIceCandidate(new RTCIceCandidate(candidate));
+        const { changeRemoteMessage } = this.props;
+        // const candidate = JSON.parse(data);        
+        setTimeout(function() {
+
+            let payload = {
+                data: {
+                    category: 'ws',
+                    service: 'Candidate',
+                    access_token: accessToken,
+                    channel_type: "data",
+                    label: thisComponent.opponentClientToken,
+                    opponent_client_token: thisComponent.opponentClientToken,        
+                    candidate: {        
+                        candidate: {
+                            candidate: candidate.candidate,
+                            sdpMLineIndex: 0,
+                            sdpMid: "0",
+                        },
+                        type: 'candidate',
+                    }
+                }
+            };
+            console.log('changeRemoteMessage 1', payload);
+        
+            changeRemoteMessage(payload);
+        }, 400);
+    };
+    onAnswerRemoteLocalDataChannel = (answer) => {
+        const { changeLocalMessage } = this.props;
+        const { opponentClientToken } = this;
+        console.log('onAnswerRemoteLocalDataChannel', answer);
+        setTimeout(function() {
+            changeLocalMessage({
+                service: "Answer",
+                type: "remote",
+                label: opponentClientToken,
+                data: answer
+            });
+        }, 400);
+    };
+    onCandidateRemoteLocalDataChannel = (candidate) => {
+        const { changeLocalMessage } = this.props;
+        const { opponentClientToken } = this;
+        
+        console.log('onCandidateRemoteLocalDataChannel', candidate);
+        setTimeout(function() {
+            changeLocalMessage({
+                service: "Candidate",
+                type: "remote",
+                label: opponentClientToken,
+                data: candidate,
+            });
+        }, 400);
+    }
+
+    createOfferRemoteDataChannel = (opponentClientToken) => {
+
+        this.remoteDataChannelConnection = new RTCPeerConnection(this.configuration);
+        
+        const access_info = JSON.parse(sessionStorage.getItem('access_info'));
+        let accessToken = '';
+        if (access_info) {
+            accessToken = access_info.access_token
+        }
+
+        const thisComponent = this;
+        const { remoteDataChannelConnection } = this;
+        const { changeRemoteMessage } = this.props;
+        
+        this.remoteDataChannelConnection.oniceconnectionstatechange = e => {
+            console.log('remoteDataChannelConnection oniceconnectionstatechange', e);
+        };
+        this.remoteDataChannelConnection.onicecandidate = function (e) {
+            if (e.candidate) {
+                changeRemoteMessage({
+                    data: {
+                        category: 'ws',
+                        service: 'Candidate',
+                        access_token: accessToken,
+                        opponent_client_token: thisComponent.opponentClientToken,
+                        label: accessToken,
+                        channel_type: 'data',
+                        candidate: {
+                            type: 'candidate',
+                            candidate: e.candidate,
+                        },
+                    }
+                });
+            }
+        };
+        this.remoteDataChannelConnection.onnegotiationneeded = e => {
+            console.log('onnegotiationneeded', e);
+            // changeLocalMessage({
+            //     service: "Connect",
+            //     data: accessToken,
+            // });
+        };
+        let dc = this.remoteDataChannelConnection.createDataChannel(
+            opponentClientToken, { 
+                ordered: true, 
+                maxRetransmitTime: 3000,
+        });
+        
+        dc.onclose = () => {
+            console.log('remoteDataChannel has closed');
+        }
+        dc.onopen = () => {
+            thisComponent.setState({
+                isOpenedWebRTCRemoteDc: true,
+            });
+            console.log('remoteDataChannel has opened');
+        };
+        dc.onmessage = e => {
+            console.log('remoteDataChannel onmessage', e);
+            const data = JSON.parse(e.data);
+            const { currentHwnd } = this.props;
+            console.log('currentHwnd:', currentHwnd)
+            let req = {
+                handle: currentHwnd,
+                x: parseFloat(data.x),
+                y: parseFloat(data.y)
+            };
+            console.log(req);
+            if ( data.command === 'mouse_down' ) {
+                client.MouseDown(req, function (err, res) {
+                    console.log('MouseDown', res);
+                });
+            } else if ( data.command === 'mouse_move' ) {
+                this.mouseMoveQueue.push(req);
+                req = this.mouseMoveQueue.shift();
+                client.MouseMove(req, function (err, res) {
+                    console.log('MouseMove', res);
+                });
+            } else if ( data.command === 'mouse_up' ) {
+                client.MouseUp(req, function (err, res) {
+                    console.log('MouseUp', res);
+                });
+            }
+
+        }        
+
+        remoteDataChannelConnection.createOffer()
+        .then(function (offer) {
+            console.log('thisComponent.opponentClientToken', thisComponent.opponentClientToken);
+            let payload = {
+                data: {
+                    category: 'ws',
+                    service: 'Offer',
+                    access_token: accessToken,
+                    channel_type: "data",
+                    opponent_client_token: thisComponent.opponentClientToken,
+                    label: accessToken,
+                    sdp: offer,
+                }
+            };
+            changeRemoteMessage(payload);
+            remoteDataChannelConnection.setLocalDescription(offer);
+        }).catch(function (error) {
+            console.log('SWS', 'An error has occurred.', error);
+        });
+    };
     onCandidateStream = (candidate) => {
-        console.log('onCandidateStream', candidate);
         this.streamConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    };
+    onCandidateRemoteDataChannel = (candidate) => {
+        console.log('onCandidateRemoteDataChannel', candidate);
+        this.remoteDataChannelConnection.addIceCandidate(new RTCIceCandidate(candidate));
     };
 
     startDataChannel = () => {
@@ -193,6 +424,12 @@ class ImageViewer extends Component {
         const { changeLocalMessage, user } = this.props;
         const thisComponent = this;
         let windowImageUrl = this.windowImageUrl;
+        const access_info = JSON.parse(sessionStorage.getItem('access_info'));
+        let accessToken = '';
+        if (access_info) {
+            accessToken = access_info.access_token
+        }
+
         this.dataChannelConnection = new RTCPeerConnection(configuration);
         this.dataChannelConnection.oniceconnectionstatechange = e => {
             console.log('oniceconnectionstatechange', e);
@@ -201,6 +438,8 @@ class ImageViewer extends Component {
             if (e.candidate) {
                 changeLocalMessage({
                     service: "Candidate",
+                    type: "local",
+                    label: accessToken,
                     data: e.candidate,
                 });
             }
@@ -209,7 +448,8 @@ class ImageViewer extends Component {
             console.log('onnegotiationneeded', e);
             changeLocalMessage({
                 service: "Connect",
-                data: "client1"
+                type: "local",
+                label: accessToken,
             });
         };
         this.dataChannelConnection.ondatachannel = function (e) {
@@ -280,11 +520,17 @@ class ImageViewer extends Component {
 
         changeLocalMessage({
             service: "Connect",
-            data: user.access_token,
+            type: "local",
+            label: user.access_token,
         });
     };
 
     onOfferDataChannel = (offer) => {
+        const access_info = JSON.parse(sessionStorage.getItem('access_info'));
+        let accessToken = '';
+        if (access_info) {
+            accessToken = access_info.access_token
+        }
         const { dataChannelConnection } = this;
         const { changeLocalMessage } = this.props;
         const d = JSON.parse(offer);
@@ -294,6 +540,8 @@ class ImageViewer extends Component {
             dataChannelConnection.setLocalDescription(answer);
             changeLocalMessage({
                 service: "Answer",
+                type: "local",
+                label: accessToken,
                 data: answer
             });
         }, function (error) {
@@ -306,20 +554,38 @@ class ImageViewer extends Component {
     };
 
     shouldComponentUpdate(nextProps, nextState, nextContext) {
+        const access_info = JSON.parse(sessionStorage.getItem('access_info'));
+        let accessToken = '';
+        if (access_info) {
+            accessToken = access_info.access_token
+        }
+
         if ( nextProps.onLocalMessage ) {
-            console.log('shouldComponentUpdate', 'onLocalMessage', nextProps.onLocalMessage);
-            const { onOfferDataChannel, onCandidateDataChannel } = this;
+            // console.log('shouldComponentUpdate', 'onLocalMessage', nextProps.onLocalMessage);
+            const { onOfferDataChannel, onCandidateDataChannel, onOfferRemoteLocalDataChannel, onCandidateLocalToRemoteDataChannel } = this;
             const message = nextProps.onLocalMessage;
             let s = message.split('\n');
-            console.log('DEBUG', s);
+            // console.log('DEBUG', s);
             for ( let i = 0; i < s.length; i++ ) {
                 let data = JSON.parse(s[i]);
+                console.log('onLocalMessage data', data);
                 switch (data.service) {
                     case "Offer":
-                        onOfferDataChannel(data.data);
+                        if ( data.type === 'local' ) {
+                            onOfferDataChannel(data.data);
+                        } else {
+                            onOfferRemoteLocalDataChannel(data.data);
+                        }
                         break;
                     case "Candidate":
-                        onCandidateDataChannel(data.data);
+                        console.log('data.type', data.type);
+                        if ( data.type === 'local' ) {
+                            console.log('data.type 1', data.type);
+                            onCandidateDataChannel(data.data);
+                        } else {
+                            console.log('data.type 2', data.type);
+                            onCandidateLocalToRemoteDataChannel(data.data);
+                        }
                         break;
                     default:
                         break;
@@ -327,38 +593,71 @@ class ImageViewer extends Component {
             }
         }
         if ( nextProps.onRemoteMessage ) {
-            console.log('shouldComponentUpdate', 'onRemoteMessage', nextProps.onRemoteMessage);
-            const { onAnswerStream, onCandidateStream, createOfferStream, createAnswerStream, startToLive } = this;
+            // console.log('shouldComponentUpdate', 'onRemoteMessage', nextProps.onRemoteMessage);
+            const { 
+                onAnswerStream, 
+                onAnswerRemoteDataChannel,
+                onCandidateStream, 
+                createOfferStream, 
+                createAnswerStream, 
+                createOfferRemoteDataChannel,
+                createOfferRemoteLocalDataChannel,
+                onAnswerRemoteLocalDataChannel,
+                onCandidateRemoteLocalDataChannel,
+                onCandidateRemoteDataChannel } = this;
             const message = nextProps.onRemoteMessage;
-            // let s = message.split('\n');
+            let s = message.split('\n');
             // console.log('shouldComponentUpdate DEBUG', s);
-            // for ( let i = 0; i < s.length; i++ ) {
-            let data = JSON.parse(message);
-            console.log('data', data);
-            switch (data.data.service) {
-                case "Register":
-                    this.clientToken = data.data.client_token;
-                    break;
-                case "ReadyToLive":
-                    this.opponentClientToken = data.data.opponent_client_token;
-                    startToLive();
-                    return false;
-                case "RequestOffer":
-                    createOfferStream();
-                    break;
-                case "Offer":
-                    createAnswerStream(data.data.sdp);
-                    break;
-                case "Answer":
-                    onAnswerStream(data.data.sdp);
-                    break;
-                case "Candidate":
-                    onCandidateStream(data.data.candidate.candidate);
-                    break;
-                default:
-                    break;
+            for ( let i = 0; i < s.length; i++ ) {
+                let data = JSON.parse(s[i]);
+                console.log('onRemoteMessage data', data);
+                switch (data.data.service) {
+                    case "Register":
+                        this.clientToken = data.data.client_token;
+                        break;
+                    case "ReadyToLive":
+                        // TODO: 누군가가 접속했다는 뜻이다. 나중에 에이전트 목록에 추가하자.
+                        // this.opponentClientToken = data.data.opponent_client_token;
+                        // startToLive();
+                        // return false;
+                        break;
+                    case "RequestOffer":
+                        createOfferStream();
+                        break;
+                    case "Offer":
+                        this.opponentClientToken = data.data.client_token;
+                        createAnswerStream(data.data.sdp);
+                        // Android <-> Worker
+                        createOfferRemoteLocalDataChannel();
+                        // Android <-> Electron
+                        createOfferRemoteDataChannel(this.opponentClientToken);
+                        break;
+                    case "Answer":
+                        if ( data.data.channel_type === 'data' ) {                        
+                            if ( data.data.label === accessToken ) {
+                                onAnswerRemoteDataChannel(data.data.sdp);
+                            } else {
+                                onAnswerRemoteLocalDataChannel(data.data.sdp);
+                            }
+                        } else {
+                            onAnswerStream(data.data.sdp);
+                        }
+                        break;
+                    case "Candidate":
+                        if ( data.data.channel_type === 'data' ) {                        
+                            if ( data.data.label === accessToken ) {
+                                onCandidateRemoteDataChannel(data.data.candidate.candidate);
+                            } else {
+                                onCandidateRemoteLocalDataChannel(data.data.candidate.candidate);
+                            }
+                        } else {
+                            onCandidateStream(data.data.candidate.candidate);
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
-            // }
         }
         return true;
     }

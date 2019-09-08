@@ -5,9 +5,17 @@ import SearchListContainer from '../containers/SearchListContainer';
 import PlayGroundContainer from '../containers/PlayGroundContainer';
 
 class MainPage extends Component {
+    state = {
+        currentHwnd: 0,
+    }
 
+    changeCurrentHandle = (hWnd) => {
+        this.setState({
+            currentHwnd: hWnd,
+        });
+    };
     render() {
-        console.log('MainPage:');
+        const { changeCurrentHandle } = this;
         return (
             <Fragment>
                 <HomeTemplate
@@ -17,11 +25,16 @@ class MainPage extends Component {
                             logout={this.props.logout}
                         />
                     }
-                    searchList={<SearchListContainer />}
+                    searchList={
+                        <SearchListContainer
+                            changeCurrentHandle={changeCurrentHandle}
+                        />
+                    }
                     // header={<HeaderContainer platform={this.state.platform}/>}
                     playGround={
                         <PlayGroundContainer
                             user={this.props.user}
+                            currentHwnd={this.state.currentHwnd}
                             changeLocalMessage={this.props.changeLocalMessage}
                             changeRemoteMessage={this.props.changeRemoteMessage}
                             onLocalMessage={this.props.onLocalMessage}

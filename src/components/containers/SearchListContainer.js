@@ -278,7 +278,8 @@ class SearchListContainer extends Component {
     }
 
     handleClick = (item) => {
-        console.log('handleClick', item, this.state.windowList);
+        
+        const { changedCurrentHandle } = this;
         const access_info = JSON.parse(sessionStorage.getItem('access_info'));
         let accessToken = '';
         if (access_info) {
@@ -303,9 +304,7 @@ class SearchListContainer extends Component {
             client.EndStreaming(req, function (err, res) {
                 console.log('EndStreaming', err, res);
             });
-            this.setState({
-                currentHandle: 0,
-            });
+            changedCurrentHandle(0);
         } else {
             let req = {
                 handle: hWnd,
@@ -314,11 +313,17 @@ class SearchListContainer extends Component {
             client.StartStreaming(req, function (err, res) {
                 console.log('StartStreaming', err, res);
             });
-            this.setState({
-                currentHandle: hWnd,
-            });
+            changedCurrentHandle(hWnd);
         }
     };
+
+    changedCurrentHandle = (hWnd) => {
+        const { changeCurrentHandle } = this.props;
+        changeCurrentHandle(hWnd);
+        this.setState({
+            currentHandle: hWnd,
+        });
+    }
 
     componentDidMount() {
         const {handleSearch} = this;

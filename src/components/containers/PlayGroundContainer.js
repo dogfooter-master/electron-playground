@@ -7,6 +7,7 @@ class PlayGroundContainer extends Component {
     render() {
         let viewer = <ImageViewer
                         user={this.props.user}
+                        currentHwnd={this.props.currentHwnd}
                         changeLocalMessage={this.props.changeLocalMessage}
                         changeRemoteMessage={this.props.changeRemoteMessage}
                         onLocalMessage={this.props.onLocalMessage}

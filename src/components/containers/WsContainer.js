@@ -13,7 +13,7 @@ class WsContainer extends Component {
         // this.host = '';
         this.reconnectIntervalInMilliSeconds = 1000;
         // this.remoteHost = 'ws://lazybird.mynetgear.com:1100/ws';
-        this.remoteHost = 'wss://dermaster.io/ws';
+        this.remoteHost = 'wss://flowork.ai/ws';
         this.localHost = 'ws://localhost:17090/ws';
         this.refWebsocketLocal = null;
         this.refWebsocketRemote = null;
@@ -37,18 +37,18 @@ class WsContainer extends Component {
 
     sendRemote = (msg) => {
         if (this.refWebsocketRemote) {
-            console.log('SWS', 'sendRemote', msg);
+            // console.log('SWS', 'sendRemote', msg);
             this.refWebsocketRemote.sendMessage(msg);
         }
     };
     onOpenRemote = () => {
         const {onOpenRemoteProps} = this.props;
-        console.log('SWS', 'onOpenRemote');
+        // console.log('SWS', 'onOpenRemote');
         onOpenRemoteProps();
     };
     onMessageRemote = (e) => {
         const {onMessageRemoteProps} = this.props;
-        console.log('WsContainer, onMessageRemote', e);
+        // console.log('WsContainer, onMessageRemote', e);
         onMessageRemoteProps(e);
         // let payload = JSON.parse(e);
         // if (payload.data) {
@@ -110,25 +110,25 @@ class WsContainer extends Component {
     };
     onCloseRemote = () => {
         const { onCloseRemoteProps } = this.props;
-        console.log('SWS', 'onCloseRemote');
+        // console.log('SWS', 'onCloseRemote');
         onCloseRemoteProps();
     };
 
     sendLocal = (msg) => {
         if (this.refWebsocketLocal) {
-            console.log('SWS', 'sendLocal', msg);
+            // console.log('SWS', 'sendLocal', msg);
             this.refWebsocketLocal.sendMessage(msg);
         }
     };
     onOpenLocal = () => {
         const {onOpenLocalProps} = this.props;
-        console.log('SWS', 'onOpenLocal');
+        // console.log('SWS', 'onOpenLocal');
         onOpenLocalProps();
         // this.initializeWebsocket('Register');
     };
     onMessageLocal = (e) => {
         const {onMessageLocalProps} = this.props;
-        console.log('WsContainer, onMessageLocal', e);
+        // console.log('WsContainer, onMessageLocal', e);
         onMessageLocalProps(e);
         // const {WsActions} = this.props;
         // console.log('WsContainer, onMessageLocal', e);
@@ -192,7 +192,7 @@ class WsContainer extends Component {
     };
     onCloseLocal = () => {
         const { onCloseLocalProps } = this.props;
-        console.log('SWS', 'onCloseLocal');
+        // console.log('SWS', 'onCloseLocal');
         onCloseLocalProps();
     };
     // shouldComponentUpdate(nextProps, nextState) {
@@ -200,14 +200,11 @@ class WsContainer extends Component {
     // }
     shouldComponentUpdate = (nextProps, nextState) => {
         const {clientToken, localMessage, remoteMessage, reload, clearReloadState, clearLocalMessage, clearRemoteMessage} = nextProps;
-        console.log('DEBUG', 'reload', reload);
         if (reload) {
             if (this.refWebsocketRemote) {
-                console.log('SWS', 'this.refWebsocketRemote', this.refWebsocketRemote);
                 this.refWebsocketRemote.state.ws.close();
             }
             if (this.refWebsocketLocal) {
-                console.log('SWS', 'this.refWebsocketLocal', this.refWebsocketLocal);
                 this.refWebsocketLocal.state.ws.close();
             }
             clearReloadState();
@@ -217,7 +214,6 @@ class WsContainer extends Component {
                 this.sendLocal(JSON.stringify(localMessage));
                 clearLocalMessage();
             }
-            console.log('remoteMessage', remoteMessage);
             if ( remoteMessage ) {
                 this.sendRemote(JSON.stringify(remoteMessage));
                 clearRemoteMessage();
@@ -229,7 +225,6 @@ class WsContainer extends Component {
     render() {
         const {clientToken, sendMessage} = this.props;
         const {remoteHost, localHost, onOpenRemote, onMessageRemote, onCloseRemote, onOpenLocal, onMessageLocal, onCloseLocal, reconnectIntervalInMilliSeconds} = this;
-        console.log('SWS1', 'WsContainer', clientToken, sendMessage);
         // if (reload) {
         //     if (this.refWebsocketRemote) {
         //         console.log('SWS', 'this.refWebsocketRemote', this.refWebsocketRemote);
@@ -256,7 +251,7 @@ class WsContainer extends Component {
         //         }
         //     }
         // }
-        console.log('SWS', 'WebsocketContainer', remoteHost, localHost);
+        // console.log('SWS', 'WebsocketContainer', remoteHost, localHost);
         return <Fragment>
             <Websocket url={remoteHost}
                        onOpen={onOpenRemote}

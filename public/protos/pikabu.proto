@@ -11,6 +11,12 @@ service Peekaboo {
     rpc ChangeQuality (ChangeQualityRequest) returns (ChangeQualityReply);
     rpc ChangeFps (ChangeFpsRequest) returns (ChangeFpsReply);
     rpc ChangeProperties (ChangePropertiesRequest) returns (ChangePropertiesReply);
+    rpc MouseDown (MouseDownRequest) returns (MouseDownReply);
+    rpc MouseDown2 (MouseDown2Request) returns (MouseDown2Reply);
+    rpc MouseUp (MouseUpRequest) returns (MouseUpReply);
+    rpc MouseUp2 (MouseUp2Request) returns (MouseUp2Reply);
+    rpc MouseMove (MouseMoveRequest) returns (MouseMoveReply);
+    rpc MouseMove2 (MouseMove2Request) returns (MouseMove2Reply);
 }
 
 message PikabuRequest {
@@ -82,5 +88,65 @@ message ChangePropertiesRequest {
 
 message ChangePropertiesReply {
     string label = 1;
+}
+
+message MouseDownRequest {
+    int32 handle = 1;
+    float x = 3;
+    float y = 4;
+}
+
+message MouseDownReply {
+    int32 handle = 1;
+}
+
+message MouseDown2Request {
+    int32 handle = 1;
+    int32 x = 3;
+    int32 y = 4;
+}
+
+message MouseDown2Reply {
+    int32 handle = 1;
+}
+
+message MouseUpRequest {
+    int32 handle = 1;
+    float x = 3;
+    float y = 4;
+}
+
+message MouseUpReply {
+    int32 handle = 1;
+}
+
+message MouseUp2Request {
+    int32 handle = 1;
+    int32 x = 3;
+    int32 y = 4;
+}
+
+message MouseUp2Reply {
+    int32 handle = 1;
+}
+
+message MouseMoveRequest {
+    int32 handle = 1;
+    float x = 3;
+    float y = 4;
+}
+
+message MouseMoveReply {
+    int32 handle = 1;
+}
+
+message MouseMove2Request {
+    int32 handle = 1;
+    int32 x = 3;
+    int32 y = 4;
+}
+
+message MouseMove2Reply {
+    int32 handle = 1;
 }
 

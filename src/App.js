@@ -67,6 +67,10 @@ class App extends Component {
         isConnectedRemote: false,
       });
     }
+    this.setState({
+      reload: true,
+      isLogin: false,
+    })
   };
   onOpenLocal = () => {
     console.log('onOpenLocal');
@@ -95,6 +99,7 @@ class App extends Component {
     })
   };
   changeRemoteMessage = (msg) => {
+    console.log('changeRemoteMessage', msg);
     this.setState({
       remoteMessage: msg,
     })
@@ -118,7 +123,7 @@ class App extends Component {
     }
   };
   render () {
-    console.log('SWS', 'DEBUG1', 'App', this.state);
+    // console.log('SWS', 'DEBUG1', 'App', this.state);
     const {isLogin, reload, localMessage, remoteMessage, onLocalMessage, onRemoteMessage } = this.state;
     const {login, logout, clearReloadState, onMessageRemote, onOpenRemote, onCloseRemote, onMessageLocal, onOpenLocal, onCloseLocal, changeLocalMessage, changeRemoteMessage, clearLocalMessage, clearRemoteMessage } = this;
 

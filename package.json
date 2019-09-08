@@ -61,5 +61,5 @@
     "typescript": "^3.5.3",
     "wait-on": "^3.3.0"
   },
-  "proxy": "https://dermaster.io"
+  "proxy": "https://flowork.ai"
 }
