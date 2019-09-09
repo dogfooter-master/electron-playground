@@ -19,7 +19,20 @@ class ImageViewer extends Component {
         // this.setWebsocket = this.setWebsocket.bind(this);
         // this.host = '';
         this.configuration = {
-            'iceServers' : [{ 'url' : 'stun:stun.l.google.com:19302'}]
+            'iceServers' : [
+                { 'url' : 'stun:stun.l.google.com:19302'},
+                { 'url' : 'stun:flowork.ai:3478'},
+                {
+                    'url' : 'turn:flowrok.ai:3478?transport=udp',
+                    'username' : 'flowork',
+                    'credential' : 'Hotice1234!',
+                },
+                {
+                    'url' : 'turn:flowrok.ai:3478?transport=tcp',
+                    'username' : 'flowork',
+                    'credential' : 'Hotice1234!',
+                },
+                ]
             //'iceServers' : [{ 'url' : 'stun:1.234.23.6:3478'}]
             // 'iceServers': []
         };
@@ -33,6 +46,7 @@ class ImageViewer extends Component {
         this.opponentClientToken = '';
         this.clientToken = '';
         this.mouseMoveQueue = [];
+        this.localDataChannel = null;
     }
 
     state = {
@@ -72,6 +86,9 @@ class ImageViewer extends Component {
         }
         this.streamConnection = new RTCPeerConnection(configuration);
         this.streamConnection.addStream(stream);
+        this.streamConnection.onclose = (e) => {
+            console.log('streamConnection', 'onclose', e);
+        };
         this.streamConnection.onaddstream = function(e) {
             console.log('streamConnection', 'onaddstream', e);
         };
@@ -305,6 +322,7 @@ class ImageViewer extends Component {
     createOfferRemoteDataChannel = (opponentClientToken) => {
 
         this.remoteDataChannelConnection = new RTCPeerConnection(this.configuration);
+        const { localDataChannel } = this;
         
         const access_info = JSON.parse(sessionStorage.getItem('access_info'));
         let accessToken = '';
@@ -352,7 +370,7 @@ class ImageViewer extends Component {
         
         dc.onclose = () => {
             console.log('remoteDataChannel has closed');
-        }
+        };
         dc.onopen = () => {
             thisComponent.setState({
                 isOpenedWebRTCRemoteDc: true,
@@ -371,22 +389,24 @@ class ImageViewer extends Component {
             };
             console.log(req);
             if ( data.command === 'mouse_down' ) {
-                client.MouseDown(req, function (err, res) {
-                    console.log('MouseDown', res);
-                });
+                localDataChannel.send(e.data)
+                // client.MouseDown(req, function (err, res) {
+                //     console.log('MouseDown', res);
+                // });
             } else if ( data.command === 'mouse_move' ) {
-                this.mouseMoveQueue.push(req);
-                req = this.mouseMoveQueue.shift();
-                client.MouseMove(req, function (err, res) {
-                    console.log('MouseMove', res);
-                });
+                localDataChannel.send(e.data)
+                // this.mouseMoveQueue.push(req);
+                // req = this.mouseMoveQueue.shift();
+                // client.MouseMove(req, function (err, res) {
+                //     console.log('MouseMove', res);
+                // });
             } else if ( data.command === 'mouse_up' ) {
-                client.MouseUp(req, function (err, res) {
-                    console.log('MouseUp', res);
-                });
+                localDataChannel.send(e.data)
+                // client.MouseUp(req, function (err, res) {
+                //     console.log('MouseUp', res);
+                // });
             }
-
-        }        
+        };
 
         remoteDataChannelConnection.createOffer()
         .then(function (offer) {
@@ -455,6 +475,7 @@ class ImageViewer extends Component {
         this.dataChannelConnection.ondatachannel = function (e) {
             console.log('ondatachannel', e);
             let dc = e.channel;
+            thisComponent.localDataChannel = dc;
             console.log('New DataChannel ' + dc.label);
             dc.onclose = () => console.log('dc has closed');
             dc.onopen = () => {
@@ -628,7 +649,8 @@ class ImageViewer extends Component {
                         this.opponentClientToken = data.data.client_token;
                         createAnswerStream(data.data.sdp);
                         // Android <-> Worker
-                        createOfferRemoteLocalDataChannel();
+                        // 안해도 됨
+                        // createOfferRemoteLocalDataChannel();
                         // Android <-> Electron
                         createOfferRemoteDataChannel(this.opponentClientToken);
                         break;
