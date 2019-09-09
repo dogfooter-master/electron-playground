@@ -379,32 +379,11 @@ class ImageViewer extends Component {
         };
         dc.onmessage = e => {
             console.log('remoteDataChannel onmessage', e);
-            const data = JSON.parse(e.data);
-            const { currentHwnd } = this.props;
-            console.log('currentHwnd:', currentHwnd)
-            let req = {
-                handle: currentHwnd,
-                x: parseFloat(data.x),
-                y: parseFloat(data.y)
-            };
-            console.log(req);
-            if ( data.command === 'mouse_down' ) {
-                localDataChannel.send(e.data)
-                // client.MouseDown(req, function (err, res) {
-                //     console.log('MouseDown', res);
-                // });
-            } else if ( data.command === 'mouse_move' ) {
-                localDataChannel.send(e.data)
-                // this.mouseMoveQueue.push(req);
-                // req = this.mouseMoveQueue.shift();
-                // client.MouseMove(req, function (err, res) {
-                //     console.log('MouseMove', res);
-                // });
-            } else if ( data.command === 'mouse_up' ) {
-                localDataChannel.send(e.data)
-                // client.MouseUp(req, function (err, res) {
-                //     console.log('MouseUp', res);
-                // });
+            const d = JSON.parse(e.data);
+            if ( d.command === 'switch' ) {
+                thisComponent.props.refSearchListContainer.handleClick('', true)
+            } else {
+                localDataChannel.send(e.data);
             }
         };
 

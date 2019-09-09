@@ -277,7 +277,7 @@ class SearchListContainer extends Component {
 
     }
 
-    handleClick = (item) => {
+    handleClick = (item, switchWindow) => {
         
         const { changedCurrentHandle } = this;
         const access_info = JSON.parse(sessionStorage.getItem('access_info'));
@@ -288,19 +288,39 @@ class SearchListContainer extends Component {
 
         const {windowList} = this.state;
         let hWnd = 0;
-        for (let i = 0; i < windowList.length; i++) {
-            if (windowList[i].title === item) {
-                hWnd = windowList[i].handle;
-                break;
+        if ( switchWindow === undefined ) {
+            for (let i = 0; i < windowList.length; i++) {
+                if (windowList[i].title === item) {
+                    hWnd = windowList[i].handle;
+                    break;
+                }
+            }
+        } else {
+            if ( windowList.length > 0 ) {
+                if ( this.state.currentHandle === 0 ) {
+                    hWnd = windowList[0].handle;
+                } else {
+                    let i = 0;
+                    for ( let j = 0; j < windowList.length; j++) {
+                        i += 1;
+                        if ( windowList[j].handle === this.state.currentHandle ) {
+                            break;
+                        }
+                    }
+                    if ( i === windowList.length) {
+                        i = 0;
+                    }
+                    console.log(windowList, this.state.currentHandle, windowList.indexOf(this.state.currentHandle), i);
+                    hWnd = windowList[i].handle;
+                }
             }
         }
 
-        if ( this.state.currentHandle === hWnd ) {
+        if ( this.state.currentHandle === hWnd && switchWindow === undefined ) {
             let req = {
                 handle: hWnd,
                 label: accessToken,
             };
-            let container = this;
             client.EndStreaming(req, function (err, res) {
                 console.log('EndStreaming', err, res);
             });
@@ -310,6 +330,7 @@ class SearchListContainer extends Component {
                 handle: hWnd,
                 label: accessToken,
             };
+            console.log('hWnd', hWnd);
             client.StartStreaming(req, function (err, res) {
                 console.log('StartStreaming', err, res);
             });
