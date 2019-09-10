@@ -47,6 +47,9 @@ class ImageViewer extends Component {
         this.clientToken = '';
         this.mouseMoveQueue = [];
         this.localDataChannel = null;
+        this.buffer = null;
+        this.canvasWidth = 800;
+        this.canvasHeight = 450;
     }
 
     state = {
@@ -383,7 +386,9 @@ class ImageViewer extends Component {
             if ( d.command === 'switch' ) {
                 thisComponent.props.refSearchListContainer.handleClick('', true)
             } else {
-                localDataChannel.send(e.data);
+                if ( localDataChannel ) {
+                    localDataChannel.send(e.data);
+                }
             }
         };
 
@@ -468,7 +473,11 @@ class ImageViewer extends Component {
                 // console.log(e.data);
                 // dc.send('Hello, World');
                 if (e.data === 'i-s') {
-                    this.buffer = new Uint8Array(0)
+                    this.buffer = new Uint8Array(0);
+                    // console.log(e.data);
+                    // let rect = e.data.split(":")[1];
+                    // this.canvasWidth = rect.split(",")[0].split("(")[1];
+                    // this.canvasHeight = rect.split(",")[1].split(")")[0];
                 } else if (e.data === 'i-e') {
                     // console.log('image buffer', this.buffer);
 
@@ -484,6 +493,7 @@ class ImageViewer extends Component {
                         //     // console.log(e);
                         canvas.width = windowImage.width;
                         canvas.height = windowImage.height;
+                        // console.log(windowImage.width, windowImage.height);
                         //     // console.log('img', img.width, img.height, img, canvas.width, canvas.height);
                         //
                         //     if ( canvas.imageData ) {

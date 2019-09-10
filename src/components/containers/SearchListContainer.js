@@ -27,7 +27,7 @@ class SearchListContainer extends Component {
         console.log('handleSearch', value);
 
         let req = {
-            keyword: '',
+            keyword: value,
         };
         let container = this;
         client.RefreshWindows(req, function (err, res) {
@@ -316,6 +316,7 @@ class SearchListContainer extends Component {
             }
         }
 
+        console.log(this.state.currentHandle, hWnd, switchWindow);
         if ( this.state.currentHandle === hWnd && switchWindow === undefined ) {
             let req = {
                 handle: hWnd,
