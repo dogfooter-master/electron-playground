@@ -7,9 +7,10 @@ import IconButton from '@material-ui/core/IconButton';
 import ReturnIcon from '@material-ui/icons/KeyboardBackspace';
 import TextField from '@material-ui/core/TextField';
 
+// const Datastore = window.require('nedb');
 const os = window.require('os');
 const { desktopCapturer } = window.require('electron');
-
+// const db = new Datastore({ filename: 'pikabu.dat', autoload: true, onload: function(err) { console.log('onload', err); } });
 
 // const grpc = window.require('grpc');
 // const PROTO_PATH = 'public/protos/signaling.proto';
@@ -25,8 +26,8 @@ let configuration = {
 };
 
 class LoginPage extends Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.remoteConnection = null;
         this.localConnection = null;
         this.connectedUser = 'electron';
@@ -41,6 +42,7 @@ class LoginPage extends Component {
         this.windowImageUrl = null;
         this.newPassword = '';
         this.pcName = '';
+        this.macAddressList = [];
     }
     state = {
         loginStatus: '',
@@ -61,8 +63,12 @@ class LoginPage extends Component {
     }
 
     componentDidMount() {
+        const { recursiveMacAddress } = this;
         this.pcName = os.hostname();
         console.log('컴퓨터 이름', this.pcName);
+        recursiveMacAddress(os.networkInterfaces(), '0');
+        console.log ('macAddressList:', this.macAddressList);
+
         /*
         const {onLogin, onOffer, onAnswer, onCandidate, onLeave, onConnected, onOfferDataChannel, onCandidateDataChannel } = this;
         this.connection = new WebSocket('ws://localhost:7070');
@@ -205,6 +211,34 @@ class LoginPage extends Component {
         this.setupPeerConnection(this.stream);
     };
 
+    recursiveMacAddress = (dic, depth) => {
+        const { recursiveMacAddress, getMacAddressList } = this;
+        Object.keys(dic).forEach(function(key) {
+            // console.log(key, depth, dic[key]);
+            if ( Array.isArray(dic[key]) ) {
+                for (let i = 0; i < dic[key].length; i++) {
+                    recursiveMacAddress(dic[key]);
+                }
+            } else {
+                getMacAddressList(dic[key]);
+            }
+        });
+    };
+
+    getMacAddressList = (eth) => {
+        // console.log(eth);
+        let thisComponent = this;
+        Object.keys(eth).forEach(function(key) {
+            // console.log(key, eth[key]);
+            if ( key === 'mac' ) {
+                if ( eth[key] === '00:00:00:00:00:00') return;
+                if ( thisComponent.macAddressList.includes(eth[key]) ) return;
+
+                thisComponent.macAddressList.push(eth[key]);
+            }
+        });
+    };
+    
     setupPeerConnection = (stream) => {
         const { send } = this;
         this.yourConnection = new RTCPeerConnection(configuration);
@@ -514,9 +548,11 @@ class LoginPage extends Component {
     validateAccessToken = () => {
         const access_info = JSON.parse(sessionStorage.getItem('access_info'));
         let accessToken = '';
+        console.log('access_info', access_info);
         if (access_info) {
             accessToken = access_info.access_token
         }
+        console.log('validateAccessToken', accessToken, access_info);
         let send_data = null;
         send_data = {
             category: 'private',
@@ -708,8 +744,13 @@ class LoginPage extends Component {
                     //     })
                     // }
                 } else {
-                    console.log('service 성공', send_data.service, status, json);
+                    console.log('서비스 호출 성공', send_data.service, status, json);
                     if (loginStatus === 'SignUpPasswordConfirm') {
+                        // let doc = { key: 'access_info', access_info: json.data };
+                        // db.insert(doc, function (err, newDoc) {
+                        //     console.log('DB insert completed', err, newDoc);
+                        // });
+
                         sessionStorage.setItem('access_info', JSON.stringify(json.data));
                         this.setState({
                             loginStatus: nextStatus,
@@ -717,6 +758,11 @@ class LoginPage extends Component {
                         })
                     } else if (loginStatus === 'SignIn') {
                         sessionStorage.setItem('access_info', JSON.stringify(json.data));
+                        // let doc = { key: 'access_info', access_info: json.data };
+                        // db.insert(doc, function (err, newDoc) {
+                        //     console.log('DB insert completed', err, newDoc);
+                        // });
+
                         this.props.login({
                             email: this.state.email,
                             nickname: this.state.nickname,

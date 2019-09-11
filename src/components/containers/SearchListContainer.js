@@ -3,10 +3,8 @@ import SearchListTemplate from '../../components/templates/SearchListTemplate';
 import Search from '../../components/searchlist/Search';
 import Result from '../../components/searchlist/Result';
 import CustomLoader from "../common/CustomLoader";
-
 const grpc = window.require('grpc');
 const PROTO_PATH = 'public/protos/pikabu.proto';
-console.log('__dirname', __dirname);
 const pikabuProto = grpc.load(PROTO_PATH).pb;
 const client = new pikabuProto.Peekaboo('127.0.0.1:17091', grpc.credentials.createInsecure());
 
@@ -317,6 +315,7 @@ class SearchListContainer extends Component {
         }
 
         console.log(this.state.currentHandle, hWnd, switchWindow);
+        const { debugDictionary } = this;
         if ( this.state.currentHandle === hWnd && switchWindow === undefined ) {
             let req = {
                 handle: hWnd,
@@ -345,7 +344,7 @@ class SearchListContainer extends Component {
         this.setState({
             currentHandle: hWnd,
         });
-    }
+    };
 
     componentDidMount() {
         const {handleSearch} = this;

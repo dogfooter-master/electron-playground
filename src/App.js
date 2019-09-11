@@ -2,11 +2,16 @@ import React, {Component, Fragment} from 'react';
 import MainPage from './components/pages/MainPage';
 import LoginPage from './components/pages/LoginPage';
 import WsContainer from './components/containers/WsContainer';
-import Websocket from "react-websocket";
+import CustomLoader from "./components/common/CustomLoader";
 
 class App extends Component {
+  constructor(props) {
+    super(props);
+    this.refLoginPage = null;
+  }
   state = {
     isLogin: false,
+    isLoaded: true,
     reload: true,
     localMessage: '',
     remoteMessage: '',
@@ -124,46 +129,54 @@ class App extends Component {
   };
   render () {
     // console.log('SWS', 'DEBUG1', 'App', this.state);
-    const {isLogin, reload, localMessage, remoteMessage, onLocalMessage, onRemoteMessage } = this.state;
+    const {isLoaded, isLogin, reload, localMessage, remoteMessage, onLocalMessage, onRemoteMessage } = this.state;
     const {login, logout, clearReloadState, onMessageRemote, onOpenRemote, onCloseRemote, onMessageLocal, onOpenLocal, onCloseLocal, changeLocalMessage, changeRemoteMessage, clearLocalMessage, clearRemoteMessage } = this;
 
 
     return (
-      <Fragment>
-        <WsContainer
-            loginOK={login}
-            logout={logout}
-            reload={reload}
-            clearReloadState={clearReloadState}
-            onMessageRemoteProps={onMessageRemote}
-            onMessageLocalProps={onMessageLocal}
-            onOpenRemoteProps={onOpenRemote}
-            onOpenLocalProps={onOpenLocal}
-            onCloseLocalProps={onCloseLocal}
-            onCloseRemoteProps={onCloseRemote}
-            localMessage={localMessage}
-            remoteMessage={remoteMessage}
-            clearLocalMessage={clearLocalMessage}
-            clearRemoteMessage={clearRemoteMessage}
-        />
-        {isLogin ?
-            <MainPage
-                logout={logout}
-                user={this.state.user}
-                changeLocalMessage={changeLocalMessage}
-                changeRemoteMessage={changeRemoteMessage}
-                onLocalMessage={onLocalMessage}
-                onRemoteMessage={onRemoteMessage}
-            /> :
-            <LoginPage
-                logout={logout}
-                login={login}
-                ref={LoginPage => {
-                  this.refLoginPage = LoginPage;
-                }}
-            />
-        }
-       </Fragment>
+        <Fragment>
+          {isLoaded ?
+              <Fragment>
+                <WsContainer
+                    loginOK={login}
+                    logout={logout}
+                    reload={reload}
+                    clearReloadState={clearReloadState}
+                    onMessageRemoteProps={onMessageRemote}
+                    onMessageLocalProps={onMessageLocal}
+                    onOpenRemoteProps={onOpenRemote}
+                    onOpenLocalProps={onOpenLocal}
+                    onCloseLocalProps={onCloseLocal}
+                    onCloseRemoteProps={onCloseRemote}
+                    localMessage={localMessage}
+                    remoteMessage={remoteMessage}
+                    clearLocalMessage={clearLocalMessage}
+                    clearRemoteMessage={clearRemoteMessage}
+                />
+                {isLogin ?
+                    <MainPage
+                        logout={logout}
+                        user={this.state.user}
+                        changeLocalMessage={changeLocalMessage}
+                        changeRemoteMessage={changeRemoteMessage}
+                        onLocalMessage={onLocalMessage}
+                        onRemoteMessage={onRemoteMessage}
+                    /> :
+                    <LoginPage
+                        logout={logout}
+                        login={login}
+                        ref={LoginPage => {
+                          this.refLoginPage = LoginPage;
+                        }}
+                    />
+                }
+              </Fragment>
+          :
+              <Fragment>
+                <CustomLoader/>
+              </Fragment>
+          }
+        </Fragment>
     )
   }
 }
