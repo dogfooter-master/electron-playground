@@ -1,13 +1,16 @@
-import React, {Component} from 'react';
+import React, {Fragment, Component} from 'react';
 import './PlayGroundTemplate.scss';
 
 class PlayGroundTemplate extends Component {
     render() {
 
         return (
-            <div className='playground-template'>
-                {this.props.viewer}
-            </div>
+            <Fragment>
+                <div className='playground-template'>
+                    {this.props.viewer}
+                </div>
+            </Fragment>
+
         )
     }
 }
