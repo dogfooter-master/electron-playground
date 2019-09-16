@@ -12,12 +12,18 @@ class MainPage extends Component {
     };
     state = {
         currentHwnd: 0,
+        windowSize: 50,
     };
     changeCurrentHandle = (hWnd) => {
         this.setState({
             currentHwnd: hWnd,
         });
     };
+    onChangeSlider = (event, value) => {
+        this.setState({
+            windowSize: value,
+        })
+    }
     render() {
         const { changeCurrentHandle } = this;
         return (
@@ -27,6 +33,7 @@ class MainPage extends Component {
                         <HeaderContainer
                             user={this.props.user}
                             logout={this.props.logout}
+                            onChangeSlider={this.onChangeSlider}
                         />
                     }
                     searchList={
@@ -47,6 +54,7 @@ class MainPage extends Component {
                             onLocalMessage={this.props.onLocalMessage}
                             onRemoteMessage={this.props.onRemoteMessage}
                             refSearchListContainer={this.refSearchListContainer}
+                            windowSize={this.state.windowSize}
                         />
                     }
                 >

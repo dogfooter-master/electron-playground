@@ -47,14 +47,14 @@ class ImageViewer extends Component {
         this.mouseMoveQueue = [];
         this.localDataChannel = null;
         this.buffer = null;
-        this.canvasWidth = 800;
-        this.canvasHeight = 450;
     }
 
     state = {
         isOpenedWebRTCLocal: false,
         isOpenedWebRTCRemote: false,
         isOpenedWebRTCRemoteDc: false,
+        width: 800,
+        height: 450,
     };
 
     componentDidMount() {
@@ -492,7 +492,7 @@ class ImageViewer extends Component {
                         //     // console.log(e);
                         canvas.width = windowImage.width;
                         canvas.height = windowImage.height;
-                        // console.log(windowImage.width, windowImage.height);
+                        // console.log('SWS', 'windowImage', windowImage.width, windowImage.height);
                         //     // console.log('img', img.width, img.height, img, canvas.width, canvas.height);
                         //
                         //     if ( canvas.imageData ) {
@@ -705,9 +705,14 @@ class ImageViewer extends Component {
         // console.log('SWS', 'WebsocketContainer', remoteHost, localHost);
         const { isOpenedWebRTCLocal, isOpenedWebRTCRemote } = this.state;
         const isOpen = ( isOpenedWebRTCLocal && isOpenedWebRTCRemote );
+        const widthScale = this.props.windowSize + '%';
+        const heightScale = this.props.windowSize + '%';
+
+        console.log('widthScale', widthScale, 'heightScale', heightScale);
+
         return <Fragment>
                 <div className={'viewer'}>
-                    <canvas className = {'webrtc-canvas'} id='webrtc-local-canvas'/>
+                    <canvas className = {'webrtc-canvas'} id='webrtc-local-canvas' style={{width: widthScale, height: heightScale}}/>
                     {isOpen ? ''
                         : <CustomLoader />
                     }

@@ -13,6 +13,7 @@ class PlayGroundContainer extends Component {
                         onLocalMessage={this.props.onLocalMessage}
                         onRemoteMessage={this.props.onRemoteMessage}
                         refSearchListContainer={this.props.refSearchListContainer}
+                        windowSize={this.props.windowSize}
                     />;
 
         return (<PlayGroundTemplate

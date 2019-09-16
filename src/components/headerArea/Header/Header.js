@@ -1,6 +1,11 @@
 import React, {Component, Fragment} from 'react';
 import Menu from '../../../components/common/Menu';
+import { withStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
+import Paper from '@material-ui/core/Paper';
+import Slider from '@material-ui/core/Slider';
+import Tooltip from '@material-ui/core/Tooltip';
+import PropTypes from 'prop-types';
 
 import './Header.scss';
 
@@ -37,6 +42,38 @@ class Header extends Component {
     };
 
     render() {
+        function ValueLabelComponent(props) {
+            const { children, open, value } = props;
+
+            const popperRef = React.useRef(null);
+            React.useEffect(() => {
+                if (popperRef.current) {
+                    popperRef.current.update();
+                }
+            });
+
+            return (
+                <Tooltip
+                    PopperProps={{
+                        popperRef,
+                    }}
+                    open={open}
+                    enterTouchDelay={0}
+                    placement="top"
+                    title={value}
+                >
+                    {children}
+                </Tooltip>
+            );
+        }
+
+        ValueLabelComponent.propTypes = {
+            children: PropTypes.element.isRequired,
+            open: PropTypes.bool.isRequired,
+            value: PropTypes.number.isRequired,
+        };
+        const { onChangeSlider } = this.props;
+
         return (
             <Fragment>
                 <div className='logo' />
@@ -59,6 +96,13 @@ class Header extends Component {
                     name="pcName"
                     variant="outlined"
                 />
+                    <Slider
+                        className={'window-size-slider'}
+                        ValueLabelComponent={ValueLabelComponent}
+                        aria-label="custom thumb label"
+                        defaultValue={50}
+                        onChange={onChangeSlider}
+                    />
                 <Menu className='setting' />
             </Fragment>
         )

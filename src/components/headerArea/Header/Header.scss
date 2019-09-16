@@ -13,36 +13,32 @@
     .user-name {
         display: inline;
         //position: absolute;
-        width: 228px;
-        height: 64px;
+        min-width: 228px;
+        min-height: 64px;
         font-family: 'LexiSaebom', sans-serif;
         pointer-events: none;
         input {
             text-align: center;
         }
+        margin-left: 24px;
     }
     .pc-name {
         display: inline;
         //position: absolute;
-        width: 480px;
-        height: 64px;
+        min-width: 230px;
+        min-height: 64px;
         input {
             text-align: center;
         }
-    }
-    .setting {
-        display: inline;
-        //position: absolute;
-        width: 100px;
-        height: 64px;
+        margin-left: 24px;
     }
     .logo {
         display: inline;
         //position: absolute;
         top: 10px;
         left: 18px;
-        width: 82px;
-        height: 64px;
+        min-width: 82px;
+        min-height: 64px;
         margin-left: 12px;
         justify-content: center;
         align-items: center;
@@ -50,263 +46,17 @@
         background-size: contain;
         background-repeat: no-repeat;
     }
-
-    @keyframes slidein {
-        from {
-            top: 87px;
-            // margin-top: 100%;
-            // height: 300%
-        }
-      
-        to {
-            top: 10px;
-            // margin-top: 0%;
-            // height: 100%;
-        }
-      }
-
-    .slide {
-        animation-duration: 0.4s;
-        animation-timing-function:ease-out;
-        animation-name: slidein;
-
+    .window-size-slider {
+      min-width: 240px;
+      max-width: 240px;
+      padding-top: 8px;
+      margin-left: 24px;
+      margin-right: 24px;
     }
-
-    @keyframes date_slidein {
-        from {
-            top: 87px;
-            // margin-top: 100%;
-            // height: 300%
-        }
-      
-        to {
-            top: 35px;
-            // margin-top: 0%;
-            // height: 100%;
-        }
-      }
-
-      .date_slide {
-        animation-duration: 0.4s;
-        animation-timing-function:ease-out;
-        animation-name: date_slidein;
-
+    .setting {
+      display: inline;
+      //position: absolute;
+      width: 100px;
+      height: 64px;
     }
-    
-    .selected-patient {
-        position: absolute;
-        left: 18px;
-        width: 300px;
-        height: 74px;
-        // background-color: #00a5bd;
-        // border: 5px solid #fff;
-        // border-top-left-radius: 5px;
-        // border-top-right-radius: 5px; 
-        // padding: 5px 10px;
-        color: #465c74;
-        background-color: #fff;
-
-        font-size: 18px;
-        // transition: all .3s ease-out;
-
-        .icon {
-            float: left;
-            // display: inline-block;
-            width: 72px;
-            height: 64px;
-            background-image: url(/icon/icon-patient.png)
-        }
-        
-        .patient-info {
-            float: left;
-            width: 150px;
-            color: #465c74;
-            padding: 10px 5px;
-
-            .name, .date_info {
-                display: inline-block;
-                width: 530px;
-                height: 24px;
-                overflow: visible;
-            }
-            .name {
-                font-size: 18px;
-                // font-weight: 500;
-
-            }
-            .date_info {
-                position: absolute;
-                top: 35px;
-                font-size: 16px;
-
-                display: flex;
-
-                span {
-                    margin-right: 10px;
-                    max-width: 100px;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                }
-                .location-list {
-                    // min-width: 100px;
-                    max-width: 300px;
-
-
-                    // &:hover {
-                    //     overflow: visible;
-                    // }
-
-                }
-            }
-        }
-
-        &.open {
-            top: 10px;
-        }
-        &.closed {
-            top: 87px;
-        }
-        
-    }
-    .button-area {
-        // position: absolute;
-        // top: 23px;
-        // left: 720px;
-        margin: 0 auto;
-        display: flex;
-
-        .button {
-            width: 250px;
-            height: 44px;
-            margin-right: 10px;
-            border-radius: 5px;
-            // outline: none;
-            // background-color: #6e8093;
-            // opacity: 0.76;
-            color: #fff;
-            font-size: 16px;
-            text-align: center;
-            line-height: 44px;
-            position: relative;
-
-
-            display: flex;
-            justify-content:center;
-             align-items:center;
-            icon {
-                margin-right: 5px;
-            }
-
-            // span {
-
-            // }
-
-        }
-  
-        .new-patient {
-            background-color: #6e8093;
-
-            .icon {
-                width: 20px;
-                height: 22px;
-                margin-right: 10px;
-                background-image: url(/icon/top-icon-newpatient.png)
-            }
-        }
-        .new-patient:hover {
-            background-color: #7f92a5;
-        }
-        .new-patient:active {
-            background-color: #546578;
-        }
-
-        .add-diagnosis {
-            background-color: #919ead;
-
-            .icon {
-                width: 28px;
-                height: 28px;
-                margin-right: 10px;
-                background-image: url(/icon/top-icon-add-diagnosis.png)
-            }
-        }
-        .add-diagnosis:hover:not(.disabled)  {
-            background-color: #7f92a5;
-        }
-        .add-diagnosis:active:not(.disabled) {
-            background-color: #546578;
-        }
-        .add-diagnosis.disabled {
-            opacity: 0.4;
-            cursor: auto;
-        }
-    }
-    .config-area {
-        position: absolute;
-        top: 18px;
-        right: 33px;
-        width: 200px;
-        height: 50px;
-        
-        .config-button {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 50px;
-            height: 42px;
-
-            background-image: url(/icon/top-btn-menu-n.png);
-
-            &:after {
-                display: none;
-                content: url(/icon/top-btn-menu-o.png) url(/icon/top-btn-menu-s.png);
-            }
-
-            &:hover, &.selected {
-                background-image: url(/icon/top-btn-menu-o.png);
-            }
-
-            &:active {
-                background-image: url(/icon/top-btn-menu-s.png);
-            }
-        }
-        
-        .config-dropdown {
-            position: absolute;
-            top: 26px;
-            right: 28px;
-            width: 100px;
-            height: 35px;
-            box-shadow: 0 2px 4px 0 rgba(0,0,0,.28);
-            background-color: #fff;
-            border-radius: 5px;
-
-            .logout-button {
-                // position: absolute;
-                // top: 60px;
-                // right: 0;
-                width: 100px;
-                height: 35px;
-                font-size: 18px;
-                color: #fff;
-                line-height: 35px;
-                // background-color: #000;
-                text-align: center;
-                // padding-right: 10px;
-                background-color: #354d66;
-                // text-decoration: underline;
-                border-radius: 5px;
-
-                &:hover {
-                    color: #9ea9b5;
-                    background-color: #46607a
-                }
-            }
-        }
-
- 
-    }
-
-    
 }

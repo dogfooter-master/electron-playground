@@ -4,7 +4,10 @@ import Header from '../../components/headerArea/Header';
 class HeaderContainer extends Component {
     render() {
         return <Fragment>
-                <Header user={this.props.user}/>
+                <Header
+                    user={this.props.user}
+                    onChangeSlider={this.props.onChangeSlider}
+                />
             </Fragment>
     }
 }
