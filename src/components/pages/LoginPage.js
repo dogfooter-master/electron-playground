@@ -138,7 +138,7 @@ class LoginPage extends Component {
         if (this.connection.readyState === 1) {
             this.connection.send(JSON.stringify(message));
         } else {
-            this.connection = new WebSocket('wss://localhost:7070');
+            this.connection = new WebSocket('wss://localhost:17090/ws');
         }
     };
 
@@ -560,16 +560,25 @@ class LoginPage extends Component {
             access_token: accessToken,
         };
         console.log(send_data);
-        fetch('/api/', {
+        fetch('https://flowork.ai/api/', {
             method: 'post',
             headers: {'Content-type': 'application/json'},
             body: JSON.stringify({
                 "data": send_data
             })
         }).then(
-            res => res.json()
+            res => {
+                console.log('service', res);
+                if ( res) {
+                    return res.json();
+                }
+            }
         ).then(
         json => {
+            console.log('service OK', json);
+            if ( !json ) {
+                return;
+            }
             console.log('service OK', send_data.service, json);
             if (json.err) {
                 console.log('err', json.err);
@@ -597,7 +606,12 @@ class LoginPage extends Component {
                 }
             }
         }).catch(
-            err => console.log(err)
+            err => {
+                console.log(err)
+                this.setState({
+                    loginStatus: 'Login',
+                });
+            }
         );
     };
 
@@ -686,16 +700,23 @@ class LoginPage extends Component {
         this.setState({
             isRequested: true,
         });
-        fetch('/api/', {
+        fetch('https://flowork.ai/api/', {
             method: 'post',
             headers: {'Content-type': 'application/json'},
             body: JSON.stringify({
                 "data": send_data
             })
         })
-            .then(res => res.json())
+            .then(res => {
+                console.log('service', res);
+                if ( res ) {
+                    return res.json();
+                }
+            })
             .then(json => {
-
+                if ( !json ) {
+                    return;
+                }
                 // console.log('service OK 1', send_data.service, json);
                 // let start = new Date().getTime();
                 // while (new Date().getTime() < start + 3000);
@@ -801,7 +822,9 @@ class LoginPage extends Component {
                     }
                 }
             })
-            .catch(err => console.log(err));
+            .catch(err => {
+                console.log(err);
+            });
     };
 
     handleChange = (e) => {

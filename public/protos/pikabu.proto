@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package pb;
 
-//The Peekaboo service definition.
-service Peekaboo {
+//The Pikabu service definition.
+service Pikabu {
     rpc Pikabu (PikabuRequest) returns (PikabuReply);
     rpc RefreshWindows (RefreshWindowsRequest) returns (RefreshWindowsReply);
     rpc StartStreaming (StartStreamingRequest) returns (StartStreamingReply);

@@ -6,7 +6,7 @@ const os = window.require('os');
 const grpc = window.require('grpc');
 const PROTO_PATH = 'public/protos/pikabu.proto';
 const pikabuProto = grpc.load(PROTO_PATH).pb;
-const client = new pikabuProto.Peekaboo('127.0.0.1:17091', grpc.credentials.createInsecure());
+const client = new pikabuProto.Pikabu('127.0.0.1:17091', grpc.credentials.createInsecure());
 
 class ImageViewer extends Component {
     constructor(props) {

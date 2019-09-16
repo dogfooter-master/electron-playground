@@ -25,7 +25,7 @@ function createWindow() {
     mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`, {"extraHeaders" : "pragma: no-cache\n"});
     mainWindow.setMenuBarVisibility(false);
     // mainWindow.setIgnoreMouseEvents(true);
-    if (isDev) {
+    if ( isDev ) {
         // Open the DevTools.
         //BrowserWindow.addDevToolsExtension('<location to your react chrome extension>');
         mainWindow.webContents.openDevTools();
